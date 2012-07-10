@@ -50,13 +50,6 @@ PROGRAM Henrys_Problem !Use Newtown-Raphson to solve Henry's problem.
   INTEGER*4 :: linearsize
   REAL :: EPSILON = 5E-4
 
-  !WRITE (*,*), "Enter in the size of aquifer (d = thickness, l = length) in meters."
-  !READ *, d, l
-  !WRITE (*,*), "Enter in the partition size (dx, dy)."
-  !READ *, dx, dy
-  !WRITE (*,*), "Now enter in your values for a and b."
-  !READ *, a, b
-
   OPEN (30, FILE="Psi0_05.txt")
   OPEN (31, FILE="C0_05.txt")
   OPEN (32, FILE="A.txt")
