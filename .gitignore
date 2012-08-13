@@ -1,0 +1,15 @@
+*.txt
+*.swp
+*.swo
+*.mod
+*.o
+*.bak*
+*.aux
+*.log
+*.nav
+*.toc
+*.snm
+*.out
+*.bbl
+*.blg
+*.dvi
