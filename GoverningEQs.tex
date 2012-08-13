@@ -1,173 +1,98 @@
-Henry's solution considers dispersion of salt into the freshwater, resulting in Darcy's equation
-being written with density as a variable. The resulting general vector form of Darcy's equation is
+Henry \cite{Henry60} assumed that a ``representative average of the value of the diffusion
+coefficient, $D$, could be found and used as a constant scalar throughout the field of flow without
+distorting the essential features of the problem.'' Additionally, Henry assumed the Bousinesq
+approximation, which implies the existence of a stream function, defined as 
 
-\begin{equation} \label{ZEqnNum283874}
-    \stackrel{\rightharpoonup}{q}=-{\raise0.7ex\hbox{\spbox{k} } \!\mathord{\left/
-    {\vphantom {k \mu }} \right. \kern-\nulldelimiterspace} \!\lower0.7ex\hbox{$ \mu
-    $}} \left(\nabla P-\rho \stackrel{\rightharpoonup}{g} \right) 
-\end{equation} 
+\begin{equation*}
+    u'=\pderiv{\psi'}{y'},\; v'=-\pderiv{\psi'}{x'} 
+\end{equation*} 
 
-Continuity equations, such as conservation of the mass of salt and water, must also be satisfied in
-addition to equation \eqref{ZEqnNum283874}. The conservation of mass of water in steady flow is
-given by,
-
-\begin{equation} \label{ZEqnNum833854} 
-    \nabla \cdot \rho _{w}
-    \stackrel{\rightharpoonup}{q}=0 
-\end{equation} 
-
-where $\rho _{w} $ is the mass per unit volume of pure water. The conservation of the mass of salt
-is similar to that of \eqref{ZEqnNum833854} and is given by,
-
-\begin{equation} \label{ZEqnNum750616} 
-    \nabla \cdot
-    c\stackrel{\rightharpoonup}{q}_{e} =0 
-\end{equation} 
-
-where c is the mass per unit volume of salt, and $\stackrel{\rightharpoonup}{q}_{e} $ is the
-effective velocity of the movement of salt. This velocity is the result of the sum of the average
-fluid velocity $\stackrel{\rightharpoonup}{q}$ and the dispersive movement of salt \cite{Henry60}.
-$c\stackrel{\rightharpoonup}{q}_{e} $ is therefore the mass flux of salt, and yields an equation of
-the form
-
-\begin{equation} \label{ZEqnNum692228} 
-    c\stackrel{\rightharpoonup}{q}_{e} = c\stackrel{\rightharpoonup}{q}-D\nabla c 
-\end{equation} 
-
-Taking the divergence of \eqref{ZEqnNum692228} and applying
-\eqref{ZEqnNum750616} results in
-
-\begin{equation} 
-    \label{ZEqnNum193707} \nabla \cdot
-    c\stackrel{\rightharpoonup}{q}-\nabla \cdot D\nabla c=0 
-\end{equation} 
-
-For convenience Henry introduced the following dimensionless quantities
-
-\begin{equation} \label{ZEqnNum621601} 
-    u'=\frac{ud}{Q} \csp v'=\frac{vd}{Q}
-     \csp x'=\frac{x}{d} \csp y'=\frac{y}{d} \csp c'=\frac{c}{c_{s} }
-    =\frac{\rho -\rho _{0} }{\rho _{s} -\rho _{0} } 
+Thus, using these assumptions allows one to write the steady state transport equations in the
+following dimensionless form 
+\begin{align} 
+  &a\left( \frac{\partial^2 \psi}{\partial x^2} + \frac{\partial^2 \psi}{\psi y^2} \right) =
+    \frac{\partial C}{\partial x} + \frac{1}{\xi}, \label{eqn:Streamfunction}\\
+  &b\left( \frac{\partial^2 C}{\partial x^2} + \frac{\partial^2 C}{\psi y^2} \right) =
+    \frac{\partial \psi}{\partial y}\frac{\partial C}{\partial x} 
+    - \frac{\partial \psi}{\partial x}\frac{\partial C}{\partial y} 
+    + \frac{1}{\xi}\frac{\partial \psi}{\partial y} + \frac{\partial C}{\partial x} +
+    \frac{1}{\xi}, \label{eqn:Concentration}
+\end{align}
+where $\psi$ is the dimensionless stream function, $C$ is the dimensionless concentration,
+$\xi=\frac{L}{d}$ is the aspect ratio of the problem domain. Additionally, the dimensionless
+parameters $a$ and $b$ are given by
+\begin{equation} \label{eqn:ab}
+  a =\frac{Q}{k_1 d} \text{ and } b = \frac{D}{Q} 
 \end{equation}
+where $Q$ is the freshwater recharge, $k_1$ is related to the hydraulic conductivity, $K$, by $k_1 =
+K\left( \frac{\rho_s - \rho_0}{\rho_0} \right)$, with $\rho_0$ and $\rho_s$ the freshwater and
+seawater densities, respectively.
 
-Equation \eqref{ZEqnNum833854} was then simplified by using the empirical
-relation \cite{Baxter} \cite{Henry60}:
-\begin{equation} \label{ZEqnNum679206} 
-    \rho =\rho _{w} +c=\rho _{0} + \left(1-E\right)c 
-\end{equation} 
-
-where E is a dimensionless constant and is approximately 0.3 for salt concentrations up to that of
-seawater \cite{Henry60}. Inserting \eqref{ZEqnNum679206} into \eqref{ZEqnNum833854} yields the new
-equation
-
-\begin{equation} \label{ZEqnNum370033} 
-    \nabla \cdot \stackrel{\rightharpoonup}{q}-\frac{Ec_{s} }{\rho _{0} } 
-    \nabla c'\stackrel{\rightharpoonup}{q}=0 
-\end{equation}
-
-In seawater ${c_{s} \mathord{\left/ {\vphantom {c_{s} \rho _{0} }} \right.
-\kern-\nulldelimiterspace} \rho _{0} } $ is approximately 0.027 \cite{Henry60}.  Therefore, the
-second term in \eqref{ZEqnNum370033} is negligible. This results in a stream function which can be
-defined as a dimensionless quantity using the relationships
-
-\begin{equation} \label{ZEqnNum615527} 
-    u'=\pderiv{\psi '}{y'} \text{,\; v} '=-\pderiv{\psi '}{x'} 
-\end{equation} 
-
-In Equation \eqref{ZEqnNum283874} the pressure term can be eliminated by
-rewriting \eqref{ZEqnNum283874} in scalar form:
-
-\begin{equation} \label{ZEqnNum206334} 
-    u=-\frac{k}{\mu } \pderiv{P}{x} 
-\end{equation}
-
-\begin{equation} \label{ZEqnNum210956} 
-    v=-\frac{k}{\mu } \left(\pderiv{P}{y} +\rho g\right) 
-\end{equation} 
-
-then differentiating \eqref{ZEqnNum206334} with respect to $y$, and
-\eqref{ZEqnNum210956} with respect to $x$ and then subtracting the two. This
-results in
-
-\begin{equation} \label{ZEqnNum826101} 
-    \pderiv{u}{y} -\pderiv{v}{x} =
-    \frac{kg}{\mu } \pderiv{\rho}{x} 
-\end{equation}
-
-Converting to a non-dimensional equation by placing \eqref{ZEqnNum621601} into
-\eqref{ZEqnNum826101} one obtains
-
-\begin{equation} \label{ZEqnNum965751} 
-    \pderiv{u'}{y'}
-    -\pderiv{v'}{x'} =\frac{k_{1} d}{Q} \pderiv{c'}{x'} 
-\end{equation}
-
-Substituting the relation \eqref{ZEqnNum615527} into \eqref{ZEqnNum965751}
-eliminates $\stackrel{\rightharpoonup}{q}$ in favor of $\psi '$ giving:
-
-\begin{equation} \label{ZEqnNum299802} \nabla ^{2} \psi '=\frac{k_{1} d}{Q}
-\pderiv{c'}{x'} \end{equation}
-
-In \eqref{ZEqnNum193707} the diffusion coefficient $D$ is a function of velocity, and therefore is
-not truly a constant. However, Henry \cite{Henry60} assumed that a ``representative average of the
-value of $D$ could be found and used as a constant scalar throughout the field of flow without
-distorting the essential features of the problem.'' This assumption will allow for equation
-\eqref{ZEqnNum193707} to be written as
-
-\begin{equation} \label{2.15)} \nabla \cdot
-c\stackrel{\rightharpoonup}{q}-D\nabla ^{2} c=0 \end{equation}
-
-Now substituting $\psi '\spbox{for} u\spbox{and} v$, and substituting in the relations
-from \eqref{ZEqnNum621601} and \eqref{ZEqnNum615527} results in the
-dimensionless form
-
-\begin{equation} \label{ZEqnNum195283} 
-    \frac{D}{Q} \nabla ^{2} c'=\pderiv{\psi'}{y'} 
-    \pderiv{c'}{x'} -\pderiv{\psi'}{x'} 
-    \pderiv{c'}{y'} 
-\end{equation}
-
-To simplify the equations further Henry introduced the variables 
-
-\begin{equation} \label{ZEqnNum517161} 
-    a={Q\mathord{\left/ {\vphantom {Q k_{1} d}} \right. \kern-\nulldelimiterspace} k_{1} d} 
-\end{equation}
-
-and 
-
-\begin{equation} \label{ZEqnNum351016} 
-    b={D\mathord{\left/ {\vphantom {D Q}} \right. \kern-\nulldelimiterspace} Q} 
-\end{equation}
-
- Substituting \eqref{ZEqnNum517161} and \eqref{ZEqnNum351016} into equations
- \eqref{ZEqnNum299802} and \eqref{ZEqnNum195283}, respectively, resulting in
-
-\begin{equation} \label{2.19)} 
-    a\nabla ^{2} \psi '=\pderiv{c'}{x'} 
-\end{equation}
-
-and
-
-\begin{equation} \label{2.20)} 
-    b\nabla ^{2} c'=\pderiv{\psi'}{y'} \pderiv{c'}{x'} -\pderiv{\psi'}{x'} \pderiv{c'}{y'} 
-\end{equation} 
-
-The impermeable boundaries at the top and the bottom of the aquifer require a zero normal velocity
-($q_{n} =0$), and so it follows that $\psi '$is a constant at those boundaries. This impermeable
-boundary also precludes salt from crossing those boundaries and therefore requires the normal
-derivative $\pderiv{c'}{y'} =0$.
-
-The vertical boundaries at the ends of the aquifer, in contact with the freshwater and the seawater
-bodies, require $c'=0\spbox{and} c'=1$, respectively.  Also, the hydrostatic pressure distributions
-require that $\pderiv{\psi'}{x'} =0$ at both ends of the aquifer. These boundary conditions can be
-summarized as follows:
-
-\begin{equation} \label{BC)} \begin{array}{lcr} 
-    \psi ' = 0, \pderiv{c'}{y'} =0 \spbox{at} y'=0
+Henry used the boundary conditions 
+\begin{equation} \label{eqn:BC)} \begin{array}{lcr} 
+    \psi = 0, \pderiv{c}{y} =0 \spbox{at} y=0
     & \qquad
-    & \pderiv{\psi'}{x'} = 0, c' = 0 \spbox{at} x'=0 \\
-    \psi '= 1, \pderiv{c'}{y'} = 0 \spbox{at} y'=1
+    & \pderiv{\psi}{x} = 0, c = 0 \spbox{at} x=0 \\
+    \psi= 1, \pderiv{c}{y} = 0 \spbox{at} y=1
     & \qquad
-    & \pderiv{\psi'}{x'} =0,  c'=1 \spbox{at} x'=\xi 
+    & \pderiv{\psi}{x} =0,  c=1 \spbox{at} x=\xi 
 \end{array} \end{equation}
-
+and what he termed as Fourier-Galerkin method, whereby one substitutes
+\begin{align}
+  \psi = \sum_{m=1}^{\infty}\sum_{n=0}^{\infty} A_{m,n} \sin{m\pi y} \cos{n\pi\frac{x}{\xi}}
+    \label{eqn:psi} \\
+  C = \sum_{r=0}^{\infty}\sum_{s=1}^{\infty} B_{r,s} \cos{r\pi y} \sin{s\pi\frac{x}{\xi}}
+    \label{eqn:C}
+\end{align}
+into \eqref{eqn:Streamfunction} and \eqref{eqn:Concentration}, then multiplying
+\eqref{eqn:Streamfunction} by $4 \sin\left(g \pi y\right) \cdot \cos\left(h \pi \frac{x}{\xi}\right)$ and
+\eqref{eqn:Concentration} by $4 \cos\left(g \pi y\right)\cdot \sin\left(h \pi \frac{x}{\xi}\right)$ to obtain
+\begin{align}
+    \varepsilon(h)\cdot a \pi^{2} A_{g,h} \left(g^{2} + \frac{h^{2} }{\xi ^{2} } \right) \xi 
+      &= \sum _{r=0}^{\infty} B_{r,h} \cdot h \cdot N \left(g,r\right) 
+      + \frac{4}{\pi} W \left(g, h\right) \label{eqn:A}\\
+    \varepsilon(g) \cdot b \pi ^{2} B_{g,h} \left(g^{2} + \frac{h^{2}}{\xi ^{2}}\right) \xi 
+      &= \frac{\pi }{4} 
+      \sum _{m=1}^{\infty } \sum _{n=0}^{\infty } \sum_{r=0}^{\infty } \sum _{s=1}^{\infty}
+      A_{m,n} B_{r,s} (msLR - nrFG) \nonumber \\
+      & + \sum_{n=0}^{\infty} A_{g,n} \cdot g \cdot N(h, n) 
+      + \varepsilon(g) \cdot \sum_{s=1}^{\infty} B_{g,s} \cdot s\cdot N(h, s) 
+      \nonumber \\ 
+      &+ \frac{4}{\pi} W(g,h) \label{eqn:B}
+\end{align}
+where
+\begin{equation*}
+  \varepsilon(g) = \begin{cases} 2 & \text{if } g=0 \\
+    1 & \text{if } g \ne 0
+  \end{cases}
+\end{equation*}
+\begin{equation*}
+  N(h,n) = \frac{\left( -1 \right)^{h+n}-1}{h+n} + \frac{\left( -1 \right)^{h-n}-1}{h-n},
+\end{equation*}
+\begin{equation*}
+  W(h,n) = \begin{cases} \frac{\left( -1 \right)^h -1}{h} &\text{if } g = 0 \\
+    0& \text{if } g\ne 0
+  \end{cases}
+\end{equation*}
+\begin{align*}
+  F &= \delta_{(m-r),g} + \delta_{(r-m),g} - \delta_{(m+r),q}, \\
+  L &= \delta_{(m-r),g} + \delta_{(r-m),g} + \delta_{(m+r),q},
+\end{align*}
+\begin{equation*}
+  G = \frac{\left( -1 \right)^{h+n-s}-1}{h+n-s} 
+    + \frac{\left( -1 \right)^{h-n+s}-1}{h-n+s}
+    - \frac{\left( -1 \right)^{h+n+s}-1}{h+n+s}
+    + \frac{\left( -1 \right)^{h-n-s}-1}{h-n-s},
+\end{equation*}
+\begin{equation*}
+  R = \frac{\left( -1 \right)^{h+n-s}-1}{h+n-s} 
+    + \frac{\left( -1 \right)^{h-n+s}-1}{h-n+s}
+    + \frac{\left( -1 \right)^{h+n+s}-1}{h+n+s}
+    + \frac{\left( -1 \right)^{h-n-s}-1}{h-n-s},
+\end{equation*}
+and $\delta_{i,j}$ is the Kronecker delta such that
+\begin{equation*}
+  \delta_{i,j} = \begin{cases} 1 & \text{if } i=j \\
+    0 & \text{if } i\ne j
+  \end{cases}
+\end{equation*}
