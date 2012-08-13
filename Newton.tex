@@ -1,0 +1,329 @@
+To improve the results obtained by Henry's Analytic solution a Newton-Raphson Method was used.
+Originally Henry used a method simple method of linearization, which will be discussed in depth
+later. The method originally used by Henry will be discussed in depth later. For Newton's Method to
+make sense, in the contexts of Henry's Problem, it is necessary to define a vector $X$ made up of
+vectors $A \spbox{and} B$, therefore let
+
+\begin{equation} \label{4.1)} 
+    X = \begin{bmatrix}
+    A_{1,0} \\ 
+    A_{1,1} \\ 
+    \vdots \\ 
+    A_{i_{a} ,j_{a} } \\ 
+    B_{0,1} \\ 
+    B_{0,2} \\ 
+    \vdots \\
+    B_{i_{b} ,j_{b} } \end{bmatrix} \; 
+    i_{a} \csp i_{b} \csp j_{a} \csp j_{b} \in \mathbb{Z}^{+} 
+\end{equation}
+
+It is also necessary to define a vector function based upon
+\eqref{ZEqnNum704007} and \eqref{ZEqnNum765213}, where
+
+\begin{equation} \label{4.2)} 
+    \phi _{g,h} \left(X\right) = \varepsilon \left(h \right) a \pi ^{2} 
+    \cdot A_{g,h} \cdot \left(g^{2} + \frac{h^{2} }{\xi ^{2}} \right)
+    \xi - \sum _{r=0}^{i_{b} }B_{r,h} \cdot h \cdot N\left(g,r\right)
+    - \frac{4}{\pi } W\left(g,h\right) 
+\end{equation} 
+and
+\begin{equation} \label{4.3)} \begin{array}{l} 
+    \gamma _{g,h} \left(X\right) = \varepsilon \left(g \right) b \pi ^{2} 
+    \cdot B_{g,h} \cdot \left(g^{2} + \frac{h^{2}}{\xi ^{2}} \right) \xi 
+    - \sum _{n=0}^{i_{a} }A_{g,n} \cdot g \cdot N\left(h,n\right) \\ 
+    - \varepsilon \left(g\right) \sum_{s=1}^{i_{b}} 
+    B_{g,s} \cdot s \cdot N\left(h,s\right) - \frac{\pi}{4} 
+    \sum_{m=1}^{i_{a}} \sum _{n=0}^{j_{a} } \sum _{r=0}^{i_{b}} \sum _{s=1}^{j_{b}} 
+    A_{m,n} B_{r,s} \left(msLR - nrFG\right) - \frac{4}{\pi} W\left(h,g\right)
+\end{array} \end{equation}
+
+Newton's Method however, takes only one function and therefore these two vector
+functions must be combined to make one new vector function. We solve it as a
+system and combine both of the above functions in one vector:
+
+\begin{equation} \label{ZEqnNum407215} \Phi
+\left(X\right)=\left[\begin{array}{c} {\phi \left(X\right)} \\ {\gamma
+\left(X\right)} \end{array} \right] \end{equation}
+
+Let $X^{(n+1)} $be the value of $X$ at the $n+1^{th} $ iteration of the
+Multi-Variate Newton-Raphson's Method. We then can write Newton's Method as
+
+\begin{equation} \label{4.5)} X^{\left(n+1\right)} =X^{\left(n\right)} -D\Phi
+^{-1} \left(X^{\left(n\right)} \right)\cdot \Phi \left(X^{\left(n\right)}
+\right), \text{ \; \; } n\in {\mathbb N} \end{equation}
+
+where $D\Phi \left(X^{\left(n\right)} \right)$ is the Jacobian matrix evaluated
+at $X^{\left(n\right)} \spbox{and} D\Phi ^{-1} \left(X^{\left(n\right)} \right)$ is
+the inverse to $D\Phi \left(X^{\left(n\right)} \right)$.
+
+For simplicity let $\Phi ^{\left(n\right)} \spbox{denote} \Phi
+\left(X^{\left(n\right)} \right)$, $\phi ^{\left(n\right)} {\rm \; denote\;
+} \phi \left(X^{\left(n\right)} \right)$, $\gamma ^{\left(n\right)} {\rm \;
+denote\; } \gamma \left(X^{\left(n\right)} \right)$, $D\Phi ^{\left(n\right)}
+\spbox{denote}D\Phi \left(X^{\left(n\right)} \right)$, and $D\Phi
+_{\left(n\right)}^{-1} \spbox{denote}D\Phi ^{-1} \left(X^{\left(n\right)}
+\right)$, therefore one arrives at
+
+\begin{equation} \label{Jacobian)} 
+    D\Phi ^{\left(n\right)} =\left[\begin{array}{cccc} 
+    {\pard{\phi_{1,0}^{(n)}}{X_{1}^{(n)}} } 
+    & {\pard{\phi_{1,0}^{(n)}}{X_{2}^{(n)}} } 
+    & {\cdots } 
+    & {\pard{\phi_{1,0}^{(n)}}{X_{i_{a} \left(j_{a} +1\right)+\left(i_{b} + 1\right)j_{b} }^{(n)}} } \\ 
+    
+    {\pard{\phi_{1,1}^{(n)}}{X_{1}^{(n)}} } 
+    & {\pard{\phi_{1,1}^{(n)}}{X_{2}^{(n)}} } 
+    & {\cdots } 
+    & {\pard{\phi_{1,1}^{(n)}}{X_{i_{a} \left(j_{a} +1\right)+\left(i_{b} +1\right)j_{b} }^{(n)}} } \\ 
+    
+    {\vdots } & {\vdots } & {\ddots } & {\vdots } \\ 
+    
+    {\pard{\phi_{i_{a} ,j_{a} }^{(n)}}{X_{1}^{(n)}} } 
+    & {\pard{\phi_{i_{a},j_{a} }^{(n)}}{X_{2}^{(n)}} } 
+    & {\cdots } 
+    & {\pard{\phi_{i_{a} ,j_{a}}^{(n)}}{X_{i_{a} \left(j_{a} +1\right)+\left(i_{b} +1\right)j_{b} }^{(n)}} } \\
+
+    {\pard{\gamma_{0,1}^{(n)}}{X_{1}^{(n)}}} 
+    & {\pard{\gamma_{0,1}^{(n)}}{X_{2}^{(n)}} } 
+    & {\cdots } 
+    &{\pard{\gamma_{0,1}^{(n)}}{X_{i_{a} \left(j_{a} +1\right)+\left(i_{b}+1\right)j_{b} }^{(n)}} } \\
+
+    {\pard{\gamma_{0,2}^{(n)}}{X_{1}^{(n)}} } 
+    & {\pard{\gamma_{0,2}^{(n)}}{X_{2}^{(n)} }} 
+    & {\cdots } 
+    & {\pard{\gamma_{0,2}^{(n)}}{X_{i_{a} \left(j_{a}+1\right)+\left(i_{b} +1\right)j_{b} }^{\left(n\right)} }} \\ 
+    
+    {\vdots } & {\vdots } & {\ddots } & {\vdots } \\
+
+    {\pard{\gamma_{i_{b} ,j_{b}}^{(n)}}{X_{1}^{(n)}} } 
+    & {\pard{\gamma_{i_{b} ,j_{b} }^{(n)}}{X_{2}^{(n)}} }
+    & {\cdots } 
+    & {\pard{\gamma_{i_{b} ,j_{b} }^{(n)}}{X_{i_{a} \left(j_{a}+1\right)+\left(i_{b} +1\right)j_{b} }^{(n)}} } 
+\end{array} \right] \end{equation}
+
+Where $i_{a} $ is the number of rows of $A$, $j_{a} $ is the number of columns
+of $A$, $i_{b} $ is the number of rows of $B$, and $j_{b} $ is the number of
+columns of $B$, therefore
+
+\begin{equation} \label{ZEqnNum134946} \begin{array}{l} {\left|\phi
+\right|=\left|A\right|=i_{a} \left(j_{a} +1\right)} \\ {\left|\gamma
+\right|=\left|B\right|=j_{b} \left(i_{b} +1\right)} \end{array} \end{equation}
+
+To understand how to write the algorithm for this specific use of Newton's
+Method, one must first understand the structure of $\Phi \spbox{and} D\Phi $. The
+vector function $\Phi $ has two parts as was shown in \eqref{ZEqnNum407215}. The
+first portion of the vector function \eqref{ZEqnNum407215} is that portion which
+represents the equations for the A's. This is the portion of $\Phi $ given by
+$\phi (X)$. The second portion of the vector function \eqref{ZEqnNum407215} is
+that portion for which the equations for the B's are represented, and is the
+portion of $\Phi $ given by $\gamma (X)$.
+
+The Jacobian matrix $D\Phi \left(X\right)$ has a similar split along its
+columns. Where the first portion is given by the derivatives of the
+function$\phi \left(X\right)$, and the second portion is given by the
+derivatives of the function$\gamma \left(X\right)$. But, now there is an
+additional split along the rows; portion one being the derivatives of the
+vector function $\Phi \left(X\right)$ with respect to the A's, and portion two
+being the derivatives of the vector function $\Phi \left(X\right)$ with respect
+to the B's. Therefore, the matrix $D\Phi $ is actually split into four
+quadrants. The matrix therefore can be broken down into its component sections
+as follows
+
+\begin{equation*}
+    D \Phi = \begin{bmatrix} 
+    I & II \\ 
+    III & IV \end{bmatrix}
+\end{equation*} 
+
+Where section I, II, III, and IV represent $\pard{\phi}{A}$, $\pard{\phi}{B}$,
+$\pard{\gamma}{A}$, and $\pard{\gamma}{A}$ respectively, and can be written
+
+\begin{equation} \label{4.8)} 
+    D \Phi = \begin{bmatrix}
+    \pard{\phi}{A} & \pard{\phi}{B} \\ 
+    \pard{\gamma}{A} & \pard{\gamma}{B} \end{bmatrix}
+\end{equation}
+
+Where
+
+\begin{equation*}
+    dim\left(I\right)=i_{a} \left(j_{a} +1\right)\times i_{a}\left(j_{a} +1\right)
+\end{equation*} 
+
+\begin{equation*}
+    dim\left(II\right)=i_{a} \left(j_{a} +1\right)\times j_{b} \left(i_{b} +1\right) 
+\end{equation*} 
+
+\begin{equation*}
+    dim\left(III\right)=j_{b} \left(i_{b} +1\right)\times i_{a} \left(j_{a} +1\right) 
+\end{equation*} 
+
+\begin{equation*}
+    dim\left(IV\right)=j_{b} \left(i_{b} +1\right)\times j_{b} \left(i_{b} +1\right) 
+\end{equation*} 
+
+and therefore
+
+\begin{equation} \label{4.9)} 
+    dim(D\Phi )=\left[i_{a} \left(j_{a} + 1\right)
+    + \left(i_{b} +1\right)j_{b} \right] 
+    \times \left[i_{a} \left(j_{a} + 1\right)
+    + \left(i_{b} + 1\right) j_{b} \right]
+\end{equation}
+
+The size of each quadrant is dependent on the size of the vectors$\phi $
+and$\gamma $, defined in \eqref{ZEqnNum134946}, which in turn is determined by
+the size of the vectors $A\spbox{and}B$.
+
+The number of rows depends on which function ($\phi \spbox{or} \gamma $) is
+being used, and the number of columns depends on whether the quadrant takes the
+derivative with respect to $A\spbox{or}B$. To encode this matrix, one must
+translate a loop counter into the indices for $A\spbox{and}B$. Since
+quadrants I and III are derivatives with respect to $A$, they have one pattern,
+and quadrants II and IV are derivatives with respect to $B$, they have another
+pattern.
+
+The matrix $D\Phi $ is a square matrix; therefore a main diagonal is defined by
+the derivatives of $\phi $and $\gamma $, with respect to$A_{g,h} $ and the
+$B_{g,h} $ terms, respectively. For these terms, one only needs to determine a
+pattern that translates the row number in the matrix $D\Phi \spbox{into} g\spbox{and} h$,
+and then place the diagonal derivatives (e.g. $\pard{\phi_{g,h}}{A_{g,h}} $ and
+$\pard{\gamma_{g,h}}{B_{g,h}} $) into the main diagonal of $D\Phi $. For the
+rest of the matrix $D\Phi $ the pattern will begiven by the column. For
+quadrants I and II the pattern is given by the function $\phi $, and for
+quadrants III and IV the pattern is given by that of the function $\gamma $. If
+the column counter is less than or equal to the total number of A's then the
+pattern for $A$ is used. If the counter for the columns is greater than that of
+the total number of $A$'s the pattern for $B$ is used. If the counter for the
+rows is less than or equal to the total number of $\phi $ functions then the
+equation for the function $\phi $ is used, while if the counter for the rows is
+greater than the total number of $\phi $ functions then the equations for the
+function $\gamma $ are used.
+
+Let $i$ be the counter for the rows, then the pattern that translates the row
+number $i\spbox{into} g\spbox{and} h$ can be discovered by writing out a table.
+
+\textbf{Table 1}
+
+\begin{center} \begin{tabular}{|p{1.0in}|p{0.2in}|p{0.2in}|} \hline 
+    $i$ & $g$ & $h$ \\ \hline 
+    1 & 1 & 0 \\ \hline 
+    2 & 1 & 1 \\ \hline 
+    3 & 1 & 2 \\ \hline 
+    $\vdots $ & $\vdots $ & $\vdots $ \\ \hline 
+    $j_{a} +1$ & 1 & $j_{a} $ \\ \hline 
+    $j_{a} +2$ & 2 & 0 \\ \hline 
+    $\left(j_{a} +2\right)+1$ & 2 & 1 \\ \hline 
+    $\vdots $ & $\vdots $ & $\vdots $ \\ \hline 
+    $\left(j_{a} +2\right)+j_{a} $ & 2 & $j_{a} $ \\ \hline 
+    $2j_{a} +3$ & 3 & 0 \\ \hline 
+    $\left(2j_{a} +3\right)+1$ & 3 & 1 \\ \hline 
+    $\vdots $ & $\vdots $ & $\vdots $ \\ \hline 
+    $\left(\left(i_{a} -1\right)j_{a} +i_{a} \right)+j_{a} $ & $i_{a} $ & $j_{a} $
+    \\ \hline
+    $i_{a} \left(j_{a} +1\right)+1$ & 0 & 1 \\ \hline 
+    $i_{a} \left(j_{a} +1\right)+2$ & 0 & 2 \\ \hline 
+    $\vdots $ & $\vdots $ & $\vdots $ \\ \hline 
+    $i_{a} \left(j_{a} +1\right)+j_{b} $ & 0 & $j_{b} $ \\ \hline 
+    $i_{a} \left(j_{a} +1\right)+j_{b} +1$ & 1 & 1 \\ \hline 
+    $i_{a} \left(j_{a} +1\right)+j_{b} +2$ & 1 & 2 \\ \hline 
+    $\vdots $ & $\vdots $ & $\vdots $ \\ \hline 
+    $i_{a} \left(j_{a} +1\right)+j_{b} +j_{b} $ & 1 & $j_{b} $ \\ \hline 
+    $i_{a} \left(j_{a} +1\right)+2j_{b} +1$ & 2 & 1 \\ \hline 
+    $\vdots $ & $\vdots $ & $\vdots $ \\ \hline 
+    $i_{a} \left(j_{a} +1\right)+j_{b} \left(i_{b} +1\right)$ & $i_{b} $ & $j_{b} $
+    \\ \hline
+\end{tabular} \end{center}
+
+Here one can see that when $i\le i_{a} \left(j_{a} +1\right)$ there is one
+pattern, and when $i>i_{a} \left(j_{a} +1\right)$ there is another pattern.
+Therefore, when $i\le i_{a} \left(j_{a} +1\right)$ one arrives at the
+relationships 
+
+\begin{equation*}
+    \left(p - 1\right) j_{a} + p \le i \le p(j_{a} + 1) \to g = p 
+    \quad p \in \mathbb{N} 
+\end{equation*}
+
+\begin{equation*}
+    \cfunc{h}
+    {j_{a}}{\spbox{if} mod(i,j_{a} + 1) = 0} 
+    {mod(i,j_{a} +1) - 1}{\text{otherwise}} 
+\end{equation*}
+
+and when $i>i_{a} \left(j_{a} +1\right)$ one arrives at the similar relations
+\begin{equation*}
+    p \cdot j_{b} + 1 \le i - i_{a} \left(j_{a} + 1\right) \le \left(p + 1\right) j_{b} \to g = p
+    \quad p \in \mathbb{Z}^{+}
+\end{equation*}
+
+\begin{equation*}
+    \cfunc{h}
+    {j_{b}}{\spbox{if} mod(i - i_{a} \left(j_{a} + 1\right), j_{b})=0}
+    {mod(i - i_{a} \left(j_{a} + 1\right), j_{b})}{\text{otherwise}}
+\end{equation*}
+
+Now that the pattern has been established one can use this pattern inside a set
+of ``Loops'' to produce $D\Phi ^{\left(n\right)} \spbox{and} \Phi ^{\left(n\right)}
+$.
+
+To initialize $D\Phi $ one needs to translate the pattern as described in Table
+1 into an easy way of taking those derivatives. The derivative will depend on
+which variable and which function one is working with. This will be determined
+by both the row and column of the matrix. Where the row indicates the function
+to be used and the column determines the which variables derivative to take. In
+general one has:
+
+\textbf{Section I}
+
+\begin{equation} \label{4.10)} 
+    \cfunc{\pderiv{\phi_{g,h}}{A_{m,n}}}
+    {\varepsilon \left(h\right)a\pi ^{2} \cdot 
+    \left(g^{2} +\frac{h^{2} }{\xi ^{2} } \right) \xi }{ \text{if } m = g \spbox{and} n = h } 
+    {0}{\text{otherwise}}
+\end{equation}
+
+\textbf{Section II}
+
+\begin{equation} \label{4.11)} 
+    \cfunc{\pderiv{\phi_{g,h}}{B_{r,s}}}
+    {-h \cdot N\left(g,r\right)}{\text{if } r \ne g \spbox{and} s = h}
+    {0}{\text{otherwise}}
+\end{equation}
+
+\textbf{Section III}
+
+\begin{equation} \label{4.12)} 
+    \cfunc{\pderiv{\gamma_{g,h}}{A_{m,n}}}
+    {-g \cdot N\left(h,n\right) 
+        - \frac{\pi}{4} \sum _{r=0}^{i_{b} } \sum _{s=1}^{j_{b}} B_{r,s} 
+        \cdot \left(gsLR - nrFG\right)} 
+    {\text{if } m = g \spbox{and} n \ne h}
+    {-\frac{\pi }{4} \sum _{r=0}^{i_{b} } \sum _{s=1}^{j_{b}} B_{r,s} 
+        \cdot \left(msLR - nrFG\right)} 
+    {\text{otherwise}}
+\end{equation}
+
+\textbf{Section IV}
+
+\begin{equation} \label{4.13)} 
+    \pderiv{\gamma_{g,h}}{B_{r,s}} = 
+    \begin{cases} 
+    \varepsilon \left(g\right)b\pi ^{2} 
+            \cdot \left(g^{2} + \frac{h^{2} }{\xi ^{2} } \right) \xi 
+            - \frac{\pi }{4} \sum _{m=1}^{i_{a} } \sum _{n=0}^{j_{a} } A_{m,n} 
+            \cdot \left(mhLR-ngFG\right)   
+    & \text{if } r = g \spbox{and} s = h \\ 
+     -s \cdot N\left(h, s\right) - \frac{\pi }{4} \sum _{m=1}^{i_{a} } \sum _{n=0}^{j_{a} }A_{m,n}
+            \cdot \left(msLR - ngFG\right)
+    & \text{if } r = g \spbox{and} s \ne h \\
+     -\frac{\pi }{4} \sum _{m=1}^{i_{a} } \sum _{n=0}^{j_{a}} A_{m,n} 
+            \cdot \left(mhLR - nrFG\right)
+    & \text{if } r \ne g \spbox{and} s = h \\ 
+     -\frac{\pi }{4} \sum _{m=1}^{i_{a} } \sum _{n=0}^{j_{a}} A_{m,n} 
+            \cdot \left(msLR - nrFG\right)
+    \text{otherwise} \end{cases}
+\end{equation} 
+
+
+

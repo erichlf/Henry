@@ -1,0 +1,28 @@
+Using Newton's Method to evaluate Henry's problem results in the ability to use a greater number of
+Fourier coefficients than that of Henry's Method. This allows for an increase in the accuracy of the
+solution. The increase in solution accuracy further allows for simulations of narrower zones of
+dispersion (small values of $b$). The lower values of $b$ correspond to lower amounts of dispersion,
+and therefore address the concerns stated by Voss and Souza \cite{Voss}, in which they say,
+``because of the unrealistic large amount of dispersion introduced in the solution by the constant
+total dispersion coefficient, this test does not check whether a model is consistent or whether it
+accurately represents density driven flows, nor does it check whether a model can represent field
+situations with relatively narrow transition zones.'' 
+
+It appears that a further increase in the total number of Fourier coefficients may be necessary to
+address the issue of instabilities created when evaluating Henry's Problem for low values of b. Due
+to time constraints the number of Fourier coefficients for this analysis was limited to 1860
+coefficients. It is believed that the number of Fourier coefficients to quell the instabilities may
+be in excess of 5100 coefficients. The majority of time needed for each iteration was in the
+evaluation of the Jacobian matrix $D\Phi $. A quicker algorithm for calculating the total derivative
+function may be able to be developed, and therefore it may be possible to evaluate Henry's Problem
+using a greater number of Fourier coefficients in a more timely fashion.
+
+In addition to developing a more efficient algorithm for the total derivative function, it might be
+necessary to use a more robust numerical method than that of Newton's Method. If a more robust
+numerical method is used it may be able to address the instabilities in the upper 20\% of the
+solution domain, without a further increase in the number of Fourier coefficients used in the
+evaluation of Henry's Problem. It is clear that using Newton's Method over that of Henry's Method
+increases the stability of Henry's Problem. This increase in stability resulted in the ability to
+use a larger number of Fourier coefficients, and therefore an increase in the accuracy of the
+solution. The increase in solution accuracy then resulted in the ability to evaluate Henry's Problem
+for values of $b<0.05$. Using an even more robust numerical method may have similar results.

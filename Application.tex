@@ -1,0 +1,143 @@
+A Multi-Variate Newton-Raphson's Method was used to solve the system of non-linear equations. An
+initial guess is however required to begin Newton's Method. It was noticed that a guess of
+$0\spbox{for} A\spbox{and} B$ could be made and still have convergence at a value of $b=0.1$.
+However, for lower values of $b$, Newton's method would no longer converge using an initial guess of
+$0$, therefore for $b<0.1$ an initial guess was obtained from the solution for $b=0.1$. This method
+worked for values of $b\ge 6\times 10^{-3} $.
+
+To determine the appropriate number of Fourier coefficients to be used, a base case for $a=0.263, \;
+b=0.1,\spbox{and} \xi =2.0\spbox{with} i_{a} =i_{b} =j_{a} =j_{b} =15$ or 480 Fourier coefficients
+was compared to the solution for which $i_{a} =i_{b} =j_{a} =j_{b} =20$ or 840 Fourier coefficients.
+The $i$ and $j$ indices were again increased by five each for a total number of 1300 Fourier
+coefficients and compared to the solution for the previous solution for 840 coefficients. This
+process was repeated until little change was seen between the previous solution and the new
+solution. Then the final number of terms would be used as the preferred number of terms. This
+process resulted in a total number of 1860 Fourier coefficients being sufficient for proper
+convergence. The increase from one set of coefficients to another resulted mostly in a change in the
+upper 20\% of the problem domain.
+
+Once the total number of Fourier coefficients has been determined, a simulation for $b=0.05$ was
+performed at the specified number of Fourier coefficients. It was then desired to find out how low
+the Newton's Method could go with respect to $b$. An iterative process was used for $b<0.05$,
+whereby every time Newton's Method converged for a value of $b$ a new value of $b$ smaller than the
+previous was used for attempting convergence. Using the initial guess obtained by the solution for
+$b=0.1$, Newton's Method was able to converge down to a value of $b=6\times 10^{-3} $. Solutions for
+values of $b<6\times 10^{-3} $ were attempted using the solution obtained by $b=6\times 10^{-3} $,
+but results were difficult to obtain and were no longer consistent in terms of the expected results.
+It would most likely be possible to obtain more consistent solutions for values of $b<6\times
+10^{-3} $, if one were to use more Fourier coefficients, but due to time constraints this was not
+tested. Therefore, only the results for $b=0.1$, 0.05, and $6\times 10^{-3} $are presented.
+
+The results above were compared to that Henry's Method and SUTRA. Henry's Method requires one to
+assume a value for the non-linear terms in equation \eqref{ZEqnNum765213}, i.e. $\frac{\pi }{4} \sum
+_{m=1}^{\infty } \sum _{n=0}^{\infty } \sum _{r=0}^{\infty } \sum _{s=1}^{\infty }A_{m,n} B_{r,s}
+\left(msLR-nrFG\right) =const$. This essentially linearizes the system of equations. Initially the
+non-linear terms were assumed to be zero. After each iteration the non-linear terms are then updated
+using the new estimated values of $A\spbox{and} B$. The resulting linear equations are such that the
+equations for $B_{0,h} $ are linearly independent of $A_{g,h} \;  \text{and\; } B_{g>0,h} $. In
+addition to the non-linear terms being treated as constants, Henry also treated the linear terms
+involving only $A_{g,h} $ in equation \eqref{ZEqnNum765213} as a known value, i.e. $\sum
+_{n=0}^{\infty }A_{g,n} \cdot g\cdot N\left(h,n\right) =const$. The value of these terms were
+obtained using previous iteration of $B_{g>0,h} $ (initially this was assumed to be zero), and the
+current iteration of $B_{0,h} $ substituted into equation \eqref{ZEqnNum704007}. Once the non-linear
+and linear terms had been estimated the resulting system of linear equations involving $B_{g>0,h} $
+were then solved. The newly obtained values for $B_{g>0,h} $ were then used to update the non-linear
+terms. When a complete set of B's and A's were evaluated, a new set of C's and $\psi  \text{'s} $
+are then evaluated. The process as described above was repeated until the error was less than some
+epsilon. Where the error was defined to be 
+
+\begin{equation} \label{5.1} 
+    error = MAX\left(\left\| C_{new} -C_{old} \right\|_{\infty } ,\left\| 
+    \psi _{new} -\psi _{old} \right\| _{\infty } \right)
+\end{equation} 
+
+and $epsilon=10^{-4} $. In this analysis the Fourier series was truncated in the fashion described
+by S\'egol \cite{Segol};
+
+\begin{center}
+    $A_{1,0}$ through $A_{1,15}$
+    $A_{2,1}$ through $A_{2,10}$
+    $A_{3,0}$ through $A_{3,5}$
+    $A_{4,1}$ through $A_{4,3}$
+    $A_{5,0}$ through $A_{5,2}$
+    $B_{0,1}$ through $B_{0,20}$
+    $B_{1,1}$ through $B_{1,10}$
+    $B_{2,1}$ through $B_{2,5}$
+    $B_{3,1}$ through $B_{3,3}$
+    $B_{4,1}$ through $B_{4,2}$
+\end{center}
+
+This truncation results in a total of 78 Fourier coefficients. 
+
+The above method was used to solve for $b=0.1$ with an initial guess, for the nonlinear terms, of
+zero. Once this solution was obtained the resulting values for the Fourier coefficients were used to
+obtain an initial guess, for $b=0.09$. The same procedure was then used to obtain a solution for
+$b=0.08$ using the solution for $b=0.09$. This was repeated until a solution for $b=0.05$ was
+obtained.
+
+For SUTRA a scheme that would model Henry's Solution for $a=0.263 \spbox{and} b=0.1$, 0.05, and
+$6\times 10^{-3} $ needed to be established, before comparing results. In previous papers such as
+Voss and Souza \cite{Voss}, comparisons using Henry's problem and SUTRA have never seemed to use
+consistent boundary conditions. That is, Henry's problem uses a fixed boundary condition for
+concentration on the seaward side, but many comparison of SUTRA to Henry's solution did not hold
+concentration constant on the seaward boundary. This results in both a difference in concentrations
+for the upper 20\% of the solution domain and a differing position for the seawater lens. Thus,
+using such a comparison will not result in similar solution, and should not be used as a comparison,
+unless a comparison of shape is wanted for the bottom 80\%.  However, in the SUTRA code one can
+change the boundary condition, so that the seawater side has a constant concentration, and so this
+feature of SUTRA will be used in the comparison that follows.
+
+Along with boundary condition, one must also match dispersion models. Henry used a simplified model
+of dispersion, where the total dispersion is not dependent on velocity, SUTRA, on the other hand,
+uses a total dispersion that is the sum of the velocity dependent dispersion and molecular
+diffusivity multiplied by porosity. To be able to compare a SUTRA model to Henry's model one would
+set the dispersivity to zero and use an artificially large molecular diffusivity. 
+
+With both the boundary conditions and dispersion models aligned correctly, one can now proceed to
+matching parameter distributions. Henry's problem uses parameters such as $a \spbox{and} b$, whereas
+SUTRA uses parameters such as freshwater recharge ($Q$), porosity ($\varepsilon $), hydraulic
+conductivity ($k$), seawater density ($\rho _{s}$), freshwater density ($\rho _{0}$), salt
+concentrations ($C_{s}$), and the dispersion coefficient ($D$), and so it is necessary to determine
+the parameter values that will represent the Henry's non-dimensional parameters $a \spbox{and} b$.
+The parameter values to be used, in the SUTRA model, will be similar to that of Voss and Souza
+\cite{Voss}, and are:
+
+$\varepsilon =0.35$
+
+$C_{s} =0.0357 \; \left[\frac{ \text{kg(dissolved solids)} }{
+\text{kg(seawater)} } \right]$
+
+$\rho _{s} =1024.99 \text{ kg/m} ^{3} $ 
+
+$\pderiv{\rho}{C} = 700 \; \left[\frac{ \text{kg} \left( \text{seawater}
+\right)^{2} }{\left( \text{kg} \left( \text{dissolved solids} \right) \text{ m}
+^{3} \right)} \right]$
+
+$\rho _{0} =1000 \text{ kg/m} ^{3} $ 
+
+$Q=6.6\times 10^{-2} \text{ kg/s} $
+
+$k= 1.024698 \times 10^{9} $ (Voss and Souza used $k= 1.020408 \times 10^{9} $)
+
+$\left|g\right| = 9.8 \text{ m/s} ^{2} $
+
+$\alpha _{L} = \alpha _{T} =0 $ 
+
+$B=1.0 \text{ m} $ 
+
+$D_{m} =18.85714\times 10^{-6} \text{ m/s} ^{2} \spbox{for} b = 0.1$
+
+$D_{m} = 9.428571 \times 10^{-6} \text{ m/s} ^{2} \spbox{for} b=0.05$
+
+$D_{m} = 1.131429 \times 10^{-6} \text{ m/s} ^{2} \spbox{for} b = 6\times 10^{-3} $
+
+$C_{0} =0$ (concentration of freshwater)
+
+The hydraulic conductivity differs from Voss and Souza, because the values used by Voss and Souza
+($k=1.020408 \times 10^{-2} \text{ kg/s} $) did not seem to result in the appropriate values of $a
+\spbox{and} b$, for all other given parameter values. As one can see three different values of
+molecular diffusivity were used. These three different values were used to match the three different
+values of$b$that were used in Henry's problem. No other parameter values were changed during the
+simulation, since changing molecular diffusivity is sufficient to match the different values of $b$.
+Total simulated time and total number of nodes for the SUTRA simulation were the same as that used
+by Voss and Souza \cite{Voss}, 100 minutes and a total 231 nodes.

@@ -1,0 +1,173 @@
+Henry's solution considers dispersion of salt into the freshwater, resulting in Darcy's equation
+being written with density as a variable. The resulting general vector form of Darcy's equation is
+
+\begin{equation} \label{ZEqnNum283874}
+    \stackrel{\rightharpoonup}{q}=-{\raise0.7ex\hbox{\spbox{k} } \!\mathord{\left/
+    {\vphantom {k \mu }} \right. \kern-\nulldelimiterspace} \!\lower0.7ex\hbox{$ \mu
+    $}} \left(\nabla P-\rho \stackrel{\rightharpoonup}{g} \right) 
+\end{equation} 
+
+Continuity equations, such as conservation of the mass of salt and water, must also be satisfied in
+addition to equation \eqref{ZEqnNum283874}. The conservation of mass of water in steady flow is
+given by,
+
+\begin{equation} \label{ZEqnNum833854} 
+    \nabla \cdot \rho _{w}
+    \stackrel{\rightharpoonup}{q}=0 
+\end{equation} 
+
+where $\rho _{w} $ is the mass per unit volume of pure water. The conservation of the mass of salt
+is similar to that of \eqref{ZEqnNum833854} and is given by,
+
+\begin{equation} \label{ZEqnNum750616} 
+    \nabla \cdot
+    c\stackrel{\rightharpoonup}{q}_{e} =0 
+\end{equation} 
+
+where c is the mass per unit volume of salt, and $\stackrel{\rightharpoonup}{q}_{e} $ is the
+effective velocity of the movement of salt. This velocity is the result of the sum of the average
+fluid velocity $\stackrel{\rightharpoonup}{q}$ and the dispersive movement of salt \cite{Henry60}.
+$c\stackrel{\rightharpoonup}{q}_{e} $ is therefore the mass flux of salt, and yields an equation of
+the form
+
+\begin{equation} \label{ZEqnNum692228} 
+    c\stackrel{\rightharpoonup}{q}_{e} = c\stackrel{\rightharpoonup}{q}-D\nabla c 
+\end{equation} 
+
+Taking the divergence of \eqref{ZEqnNum692228} and applying
+\eqref{ZEqnNum750616} results in
+
+\begin{equation} 
+    \label{ZEqnNum193707} \nabla \cdot
+    c\stackrel{\rightharpoonup}{q}-\nabla \cdot D\nabla c=0 
+\end{equation} 
+
+For convenience Henry introduced the following dimensionless quantities
+
+\begin{equation} \label{ZEqnNum621601} 
+    u'=\frac{ud}{Q} \csp v'=\frac{vd}{Q}
+     \csp x'=\frac{x}{d} \csp y'=\frac{y}{d} \csp c'=\frac{c}{c_{s} }
+    =\frac{\rho -\rho _{0} }{\rho _{s} -\rho _{0} } 
+\end{equation}
+
+Equation \eqref{ZEqnNum833854} was then simplified by using the empirical
+relation \cite{Baxter} \cite{Henry60}:
+\begin{equation} \label{ZEqnNum679206} 
+    \rho =\rho _{w} +c=\rho _{0} + \left(1-E\right)c 
+\end{equation} 
+
+where E is a dimensionless constant and is approximately 0.3 for salt concentrations up to that of
+seawater \cite{Henry60}. Inserting \eqref{ZEqnNum679206} into \eqref{ZEqnNum833854} yields the new
+equation
+
+\begin{equation} \label{ZEqnNum370033} 
+    \nabla \cdot \stackrel{\rightharpoonup}{q}-\frac{Ec_{s} }{\rho _{0} } 
+    \nabla c'\stackrel{\rightharpoonup}{q}=0 
+\end{equation}
+
+In seawater ${c_{s} \mathord{\left/ {\vphantom {c_{s} \rho _{0} }} \right.
+\kern-\nulldelimiterspace} \rho _{0} } $ is approximately 0.027 \cite{Henry60}.  Therefore, the
+second term in \eqref{ZEqnNum370033} is negligible. This results in a stream function which can be
+defined as a dimensionless quantity using the relationships
+
+\begin{equation} \label{ZEqnNum615527} 
+    u'=\pderiv{\psi '}{y'} \text{,\; v} '=-\pderiv{\psi '}{x'} 
+\end{equation} 
+
+In Equation \eqref{ZEqnNum283874} the pressure term can be eliminated by
+rewriting \eqref{ZEqnNum283874} in scalar form:
+
+\begin{equation} \label{ZEqnNum206334} 
+    u=-\frac{k}{\mu } \pderiv{P}{x} 
+\end{equation}
+
+\begin{equation} \label{ZEqnNum210956} 
+    v=-\frac{k}{\mu } \left(\pderiv{P}{y} +\rho g\right) 
+\end{equation} 
+
+then differentiating \eqref{ZEqnNum206334} with respect to $y$, and
+\eqref{ZEqnNum210956} with respect to $x$ and then subtracting the two. This
+results in
+
+\begin{equation} \label{ZEqnNum826101} 
+    \pderiv{u}{y} -\pderiv{v}{x} =
+    \frac{kg}{\mu } \pderiv{\rho}{x} 
+\end{equation}
+
+Converting to a non-dimensional equation by placing \eqref{ZEqnNum621601} into
+\eqref{ZEqnNum826101} one obtains
+
+\begin{equation} \label{ZEqnNum965751} 
+    \pderiv{u'}{y'}
+    -\pderiv{v'}{x'} =\frac{k_{1} d}{Q} \pderiv{c'}{x'} 
+\end{equation}
+
+Substituting the relation \eqref{ZEqnNum615527} into \eqref{ZEqnNum965751}
+eliminates $\stackrel{\rightharpoonup}{q}$ in favor of $\psi '$ giving:
+
+\begin{equation} \label{ZEqnNum299802} \nabla ^{2} \psi '=\frac{k_{1} d}{Q}
+\pderiv{c'}{x'} \end{equation}
+
+In \eqref{ZEqnNum193707} the diffusion coefficient $D$ is a function of velocity, and therefore is
+not truly a constant. However, Henry \cite{Henry60} assumed that a ``representative average of the
+value of $D$ could be found and used as a constant scalar throughout the field of flow without
+distorting the essential features of the problem.'' This assumption will allow for equation
+\eqref{ZEqnNum193707} to be written as
+
+\begin{equation} \label{2.15)} \nabla \cdot
+c\stackrel{\rightharpoonup}{q}-D\nabla ^{2} c=0 \end{equation}
+
+Now substituting $\psi '\spbox{for} u\spbox{and} v$, and substituting in the relations
+from \eqref{ZEqnNum621601} and \eqref{ZEqnNum615527} results in the
+dimensionless form
+
+\begin{equation} \label{ZEqnNum195283} 
+    \frac{D}{Q} \nabla ^{2} c'=\pderiv{\psi'}{y'} 
+    \pderiv{c'}{x'} -\pderiv{\psi'}{x'} 
+    \pderiv{c'}{y'} 
+\end{equation}
+
+To simplify the equations further Henry introduced the variables 
+
+\begin{equation} \label{ZEqnNum517161} 
+    a={Q\mathord{\left/ {\vphantom {Q k_{1} d}} \right. \kern-\nulldelimiterspace} k_{1} d} 
+\end{equation}
+
+and 
+
+\begin{equation} \label{ZEqnNum351016} 
+    b={D\mathord{\left/ {\vphantom {D Q}} \right. \kern-\nulldelimiterspace} Q} 
+\end{equation}
+
+ Substituting \eqref{ZEqnNum517161} and \eqref{ZEqnNum351016} into equations
+ \eqref{ZEqnNum299802} and \eqref{ZEqnNum195283}, respectively, resulting in
+
+\begin{equation} \label{2.19)} 
+    a\nabla ^{2} \psi '=\pderiv{c'}{x'} 
+\end{equation}
+
+and
+
+\begin{equation} \label{2.20)} 
+    b\nabla ^{2} c'=\pderiv{\psi'}{y'} \pderiv{c'}{x'} -\pderiv{\psi'}{x'} \pderiv{c'}{y'} 
+\end{equation} 
+
+The impermeable boundaries at the top and the bottom of the aquifer require a zero normal velocity
+($q_{n} =0$), and so it follows that $\psi '$is a constant at those boundaries. This impermeable
+boundary also precludes salt from crossing those boundaries and therefore requires the normal
+derivative $\pderiv{c'}{y'} =0$.
+
+The vertical boundaries at the ends of the aquifer, in contact with the freshwater and the seawater
+bodies, require $c'=0\spbox{and} c'=1$, respectively.  Also, the hydrostatic pressure distributions
+require that $\pderiv{\psi'}{x'} =0$ at both ends of the aquifer. These boundary conditions can be
+summarized as follows:
+
+\begin{equation} \label{BC)} \begin{array}{lcr} 
+    \psi ' = 0, \pderiv{c'}{y'} =0 \spbox{at} y'=0
+    & \qquad
+    & \pderiv{\psi'}{x'} = 0, c' = 0 \spbox{at} x'=0 \\
+    \psi '= 1, \pderiv{c'}{y'} = 0 \spbox{at} y'=1
+    & \qquad
+    & \pderiv{\psi'}{x'} =0,  c'=1 \spbox{at} x'=\xi 
+\end{array} \end{equation}
+
