@@ -64,8 +64,8 @@ PROGRAM Henrys_Problem
   !WRITE (*,*), "Now enter in your values for a and b."
   !READ *, a, b
 
-  OPEN(30, FILE='Psi0_05_75.txt')
-  OPEN(31,FILE='C0_05_75.txt')
+  OPEN(30, FILE='Psi0_1.txt')
+  OPEN(31,FILE='C0_1.txt')
   !OPEN (32, "B2h.txt")
 
   h_a = (/ 15, 10, 5, 3, 2 /)
@@ -94,8 +94,8 @@ PROGRAM Henrys_Problem
     Bl2h_W(Bl2h_size), indx0(h_b(0)), indx1(Bl1h_size), indx2(Bl2h_size), STAT = AllocateStatus)
   IF(AllocateStatus /= 0) STOP "*** NOT ENOUGH MEMORY ***"
 
-  MATRIX_A = 0. !Initializes array so that A = B = 0 and A_old = B_old = 1
-  MATRIX_B = 0. !This is so that there is no prblem with terminating the
+  MATRIX_A = 0. !Initializes array so that A = B = 0
+  MATRIX_B = 0. 
   Psi_old = 1.
   C_old = 1.
 
@@ -107,15 +107,10 @@ PROGRAM Henrys_Problem
     y(g) = dy*g
   END DO y_loop0
   
-  DO count = 0, 6
+  DO count = 0, 0!5!6
     error = 1. !Initialize error terms
     bpi2 = (b - count*0.01)*pi**2
     WRITE (*,*) 'b=', b-count*0.01
-    IF (count == 3) THEN
-      loop = 6
-    ELSE IF (count == 5) THEN
-      !EPSILON = 5E-2
-    END IF
     DO g = 0, 4 !Initialize matrices and take their inverses
       IF (g == 0 .OR. (g/2)*2 /= g) THEN 
         DO m = 1, h_b(g)
@@ -347,18 +342,18 @@ PROGRAM Henrys_Problem
 
 101     FORMAT(1x, 3(F7.3,3x))
 
-    WRITE (30,*) Psi
-    WRITE (31,*) C
-    WRITE (90,*) x
-    WRITE (91,*) y
-!    DO h = 0, j_x !Write Psi and C out to file
-!      DO g = 0, i_y
-!        WRITE (30, 101) x(h), y(g), Psi(g, h)
-!             WRITE (31, 101) x(h), y(g), C(g, h)
-!            END DO
-!      WRITE (30,*)
-!      WRITE (31,*)
-!        END DO
+!    WRITE (30,*) Psi
+!    WRITE (31,*) C
+!    WRITE (90,*) x
+!    WRITE (91,*) y
+    DO h = 0, j_x !Write Psi and C out to file
+      DO g = 0, i_y
+        WRITE (30, 101) x(h), y(g), Psi(g, h)
+        WRITE (31, 101) x(h), y(g), C(g, h)
+      END DO
+      WRITE (30,*)
+      WRITE (31,*)
+    END DO
 
 
   END SUBROUTINE

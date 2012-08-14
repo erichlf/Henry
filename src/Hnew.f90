@@ -36,13 +36,13 @@ PROGRAM Henrys_Problem !Use Newtown-Raphson to solve Henry's problem.
 
   USE Henry_funcs
   USE Henry_sums
-  USE linpacks
-!  USE LU
+!  USE linpacks
+  USE LU
   IMPLICIT NONE
 
   REAL, DIMENSION(:, :), ALLOCATABLE :: MATRIX_A, MATRIX_B !Matrices of Fourier Coefficients
   REAL, DIMENSION(:, :), ALLOCATABLE :: Psi, C !Stramlines and Isochlors
-  REAL :: a = 0.263, b = 0.05, xi, d = 1.0, l = 2.0, dx = 0.05, dy= 0.05 !Problem parameters
+  REAL :: a = 0.263, b = 0.04, xi, d = 1.0, l = 2.0, dx = 0.05, dy= 0.05 !Problem parameters
   REAL :: pid4, fourdpi, xi2, api2, bpi2 !Constants
   INTEGER*4 :: h_a(5), h_b(0:4) !Size of h depends on both i and which coefficient A or B
   INTEGER*4 :: i_a, i_b, j_a, j_b, i_y, j_x, i !Size of the Matrices
@@ -90,19 +90,19 @@ PROGRAM Henrys_Problem !Use Newtown-Raphson to solve Henry's problem.
     STOP "*** NOT ENOUGH MEMORY ***"
   END IF
 
-  !MATRIX_A = 0.
-  !MATRIX_B = 0.
-  READ (32, *) MATRIX_A !Reads in A and B from file for initial guess
-  READ (33, *) MATRIX_B
+  MATRIX_A = 0.
+  MATRIX_B = 0.
+!  READ (32, *) MATRIX_A !Reads in A and B from file for initial guess
+!  READ (33, *) MATRIX_B
 
-	DO i = 0, 0
-    IF (i /= 0) THEN
-      b = b - 0.01
-    END IF
+!	DO i = 0, 4
+!    IF (i /= 0) THEN
+!      b = b - 0.01
+!    END IF
     bpi2 = b*pi**2
     WRITE (*, *) "b=", b
     CALL NEWTON() !Performs Newton-Raphson
-	END DO
+!	END DO
 
   CALL PSIANDC(Psi, C) !Assigns Psi and C based on A and B
   CALL Dispersivity()
@@ -274,7 +274,7 @@ PROGRAM Henrys_Problem !Use Newtown-Raphson to solve Henry's problem.
     REAL, DIMENSION (linearsize, linearsize) :: DF_MATRIX
     INTEGER*4, DIMENSION(linearsize) :: indx
     INTEGER :: info, job
-    REAL :: d0, ERROR, EPSILON
+    REAL :: d0, ERROR
 
     Solution_new = 0. !Initializes Solution_new
     CALL ASSIGNSOLOLD(Solution_old) !Initial guess for solution
@@ -285,16 +285,16 @@ PROGRAM Henrys_Problem !Use Newtown-Raphson to solve Henry's problem.
       F_VECTOR = F() !Assigns F
       DF_MATRIX = DF() !Assigns DF
 
-      CALL sgefa(DF_MATRIX,linearsize,linearsize,indx,info)
-      IF( info /= 0 ) THEN
-        WRITE ( *, '(a)' ) ' '
-        WRITE ( *, '(a,i6)' ) '  SGEFA returned an error flag INFO = ', info
-        RETURN
-      END IF
-      job = 0
-      CALL sgesl (DF_MATRIX,linearsize,linearsize,indx,F_VECTOR,job)
-!      CALL ludcmp(DF_MATRIX, linearsize, linearsize, indx, d0) !Replaces DF with its LU decomposition
-!      CALL lubksb(DF_MATRIX, linearsize, linearsize, indx, F_VECTOR) !Solves DF*F=F using ludcmp
+!      CALL sgefa(DF_MATRIX,linearsize,linearsize,indx,info)
+!      IF( info /= 0 ) THEN
+!        WRITE ( *, '(a)' ) ' '
+!        WRITE ( *, '(a,i6)' ) '  SGEFA returned an error flag INFO = ', info
+!        RETURN
+!      END IF
+!      job = 0
+!      CALL sgesl (DF_MATRIX,linearsize,linearsize,indx,F_VECTOR,job)
+      CALL ludcmp(DF_MATRIX, linearsize, linearsize, indx, d0) !Replaces DF with its LU decomposition
+      CALL lubksb(DF_MATRIX, linearsize, linearsize, indx, F_VECTOR) !Solves DF*F=F using ludcmp
 !      CALL REGULARIZATION(DF_MATRIX, linearsize, F_VECTOR)
 
       Solution_new = Solution_old - F_VECTOR !Finds new solution
@@ -305,16 +305,16 @@ PROGRAM Henrys_Problem !Use Newtown-Raphson to solve Henry's problem.
       ERROR = L2NORM(F_VECTOR, linearsize) 
 
       Solution_old = Solution_new
-			F_VECTOR = F() !Reevaluates F since it was replaced by solution to DF*F=F
+      F_VECTOR = F() !Reevaluates F since it was replaced by solution to DF*F=F
       
       WRITE (*, *) "error=", ERROR !Writes error to screen
-      IF (ERROR <= EPSILON) THEN !Checks for convergence
-				!Check second Criterion
-				IF (L2NORM(F_vector,linearsize) <= EPSILON) THEN
+      IF (ERROR < EPSILON) THEN !Checks for convergence
+        !Check second Criterion
+        IF (L2NORM(F_vector,linearsize) < EPSILON*100) THEN
           EXIT
-				ELSE !States why it still has not converged
-					WRITE (*,*) "Second Criterion not met MAX(F)=", MAXVAL(F_VECTOR)
-				END IF
+        ELSE !States why it still has not converged
+          WRITE (*,*) "Second Criterion not met L2NORM(F)=", L2NORM(F_VECTOR,linearsize)
+        END IF
       END IF
     END DO
   END SUBROUTINE NEWTON
@@ -397,18 +397,26 @@ PROGRAM Henrys_Problem !Use Newtown-Raphson to solve Henry's problem.
     REAL, DIMENSION(0:j_x), INTENT(IN) :: x
     REAL, DIMENSION(0:i_y), INTENT(IN) :: y
     INTEGER*4 :: g, h
-
-    write(30,*) Psi
-    write(31,*) C
+      
+    WRITE(30,*) "#  X  Y  Z"
+    WRITE(31,*) "#  X  Y  Z"
+    DO h =0, j_x
+      DO g = 0, i_y
+        WRITE(30,101) x(h), y(g), Psi(g,h)
+        WRITE(31,101) x(h), y(g), C(g,h)
+      END DO
+      WRITE(30,*) ""
+      WRITE(30,*) ""
+    END DO
 
     !DO h = 0, j_x !Write Psi and C out to file
-      WRITE (91,*) y
+!      WRITE (91,*) y
     !  DO g = 0, i_y
-        WRITE (90,*) x
+!        WRITE (90,*) x
     !  END DO
     !END DO
 
-!    101     FORMAT(1x, 3(F7.3,3x))
+    101     FORMAT(1x, 3(F7.3,3x))
   END SUBROUTINE
 
   !Regularizes the Matrix DF, so it is less singular and solve ((D^-1/2)*AT*A*(D^-1/2) + alpha*I)*(D^1/2)x=(D^-1/2)*AT*b

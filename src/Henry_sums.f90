@@ -63,6 +63,21 @@ MODULE Henry_sums
 
   END FUNCTION SUM_BN
 
+  FUNCTION SUM_BsN(MATRIX_B, i, j, g, h)
+    INTEGER*4, INTENT(IN) :: i, j, g, h
+    INTEGER*4 :: s
+    REAL, DIMENSION (0:i, j), INTENT(IN) :: MATRIX_B
+    REAL :: SUM_BsN
+
+    SUM_BsN = 0. !Initializes SUM_BsN to 0
+
+    IF (h /= 0) THEN
+      DO s = 1, i
+        SUM_BsN = SUM_BsN + MATRIX_B(g, s)*s*N_FUNC(h, s)
+      END DO
+    END IF
+  END FUNCTION SUM_BsN
+
   FUNCTION SUM_A(MATRIX_A, x, y, xi, g, h, i, j, i_y, j_x)
     
     INTEGER, INTENT(IN) :: g, h, i, j, i_y, j_x
@@ -102,20 +117,5 @@ MODULE Henry_sums
     END DO r_loop
 
   END FUNCTION SUM_B
-
-  FUNCTION SUM_BsN(MATRIX_B, i, j, g, h)
-    INTEGER*4, INTENT(IN) :: i, j, g, h
-    INTEGER*4 :: s
-    REAL, DIMENSION (0:i, j), INTENT(IN) :: MATRIX_B
-    REAL :: SUM_BsN
-
-    SUM_BsN = 0. !Initializes SUM_BsN to 0
-
-    IF (h /= 0) THEN
-      DO s = 1, i
-        SUM_BsN = SUM_BsN + MATRIX_B(g, s)*s*N_FUNC(h, s)
-      END DO
-    END IF
-  END FUNCTION SUM_BsN
 
 END MODULE Henry_sums

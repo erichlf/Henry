@@ -2,16 +2,16 @@
 # This is an commentary line in a makefile
 # Start of the makefile
 FC = gfortran
-#PROGRAM = Henry 
-PROGRAM = Hnew
+PROGRAM = Henry 
+#PROGRAM = Hnew
 
-ifeq ($(PROGRAM), Hnew)
-  SRCS = Henry_funcs.f90 Henry_sums.f90 linpacks.f90 
-  OBJS = Henry_funcs.o Henry_sums.o linpacks.o
-else
+#ifeq ($(PROGRAM), Hnew)
+#  SRCS = Henry_funcs.f90 Henry_sums.f90 linpacks.f90 
+#  OBJS = Henry_funcs.o Henry_sums.o linpacks.o
+#else
   SRCS = Henry_funcs.f90 Henry_sums.f90 LU.f90 
   OBJS = Henry_funcs.o Henry_sums.o LU.o
-endif
+#endif
 
 FCFLAGS =
 OBJFLAGS = -c

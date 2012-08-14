@@ -60,11 +60,7 @@ MODULE Henry_funcs
     INTEGER, INTENT(IN) :: h, n
     REAL :: N_FUNC
 
-    IF (h == n) THEN
-      N_FUNC = 0.
-    ElSE
-      N_FUNC = ((-1)**(h + n) - 1)/REAL(h + n) + ((-1)**(h - n) - 1)/REAL(h - n)
-    END IF
+    N_FUNC = T_FUNC(h + n) + T_FUNC(h - n)
 
   END FUNCTION N_FUNC
 
@@ -73,11 +69,7 @@ MODULE Henry_funcs
     INTEGER, INTENT(IN) :: h, g
     REAL :: W_FUNC
 
-    IF (h == 0) THEN
-      W_FUNC = 0.
-    ELSE
-      W_FUNC = (((-1)**h - 1)/REAL(h))*delta(g, 0)
-    END IF
+    W_FUNC = T_FUNC(h)*delta(g, 0)
 
   END FUNCTION W_FUNC
 
