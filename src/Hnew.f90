@@ -36,7 +36,8 @@ PROGRAM Henrys_Problem !Use Newtown-Raphson to solve Henry's problem.
 
   USE Henry_funcs
   USE Henry_sums
-  USE LU
+  USE linpacks
+!  USE LU
   IMPLICIT NONE
 
   REAL, DIMENSION(:, :), ALLOCATABLE :: MATRIX_A, MATRIX_B !Matrices of Fourier Coefficients
@@ -269,10 +270,11 @@ PROGRAM Henrys_Problem !Use Newtown-Raphson to solve Henry's problem.
   END SUBROUTINE BGANDH
 
   SUBROUTINE NEWTON()
-    REAL, DIMENSION (linearsize) :: F_VECTOR, Solution_new, Solution_old, ERROR
+    REAL, DIMENSION (linearsize) :: F_VECTOR, Solution_new, Solution_old
     REAL, DIMENSION (linearsize, linearsize) :: DF_MATRIX
     INTEGER*4, DIMENSION(linearsize) :: indx
-    REAL :: d0, EPSILON
+    INTEGER :: info, job
+    REAL :: d0, ERROR, EPSILON
 
     Solution_new = 0. !Initializes Solution_new
     CALL ASSIGNSOLOLD(Solution_old) !Initial guess for solution
@@ -280,32 +282,40 @@ PROGRAM Henrys_Problem !Use Newtown-Raphson to solve Henry's problem.
     ERROR = 1.
 
     DO
-      WRITE (*, *) "error=", MAXVAL(ERROR) !Writes error to screen
-      IF (MAXVAL(ERROR) <= EPSILON) THEN !Checks for convergence
-				!Check second Criterion
-				IF (MAXVAL(F_vector) <= EPSILON) THEN
-          EXIT
-				ELSE !States why it still has not converged
-					WRITE (*,*) "Second Criterion not met MAX(F)=", MAXVAL(F_VECTOR)
-				END IF
-      END IF
-
       F_VECTOR = F() !Assigns F
       DF_MATRIX = DF() !Assigns DF
 
-      CALL ludcmp(DF_MATRIX, linearsize, linearsize, indx, d0) !Replaces DF with its LU decomposition
-      CALL lubksb(DF_MATRIX, linearsize, linearsize, indx, F_VECTOR) !Solves DF*F=F using ludcmp
-      !CALL REGULARIZATION(DF_MATRIX, linearsize, F_VECTOR)
+      CALL sgefa(DF_MATRIX,linearsize,linearsize,indx,info)
+      IF( info /= 0 ) THEN
+        WRITE ( *, '(a)' ) ' '
+        WRITE ( *, '(a,i6)' ) '  SGEFA returned an error flag INFO = ', info
+        RETURN
+      END IF
+      job = 0
+      CALL sgesl (DF_MATRIX,linearsize,linearsize,indx,F_VECTOR,job)
+!      CALL ludcmp(DF_MATRIX, linearsize, linearsize, indx, d0) !Replaces DF with its LU decomposition
+!      CALL lubksb(DF_MATRIX, linearsize, linearsize, indx, F_VECTOR) !Solves DF*F=F using ludcmp
+!      CALL REGULARIZATION(DF_MATRIX, linearsize, F_VECTOR)
 
       Solution_new = Solution_old - F_VECTOR !Finds new solution
 
       CALL ASSIGNAANDB(Solution_new) !Translates solution into A and B
 
-      DO o = 1, linearsize
-        ERROR(o) = ABS((Solution_new(o) - Solution_old(o))/Solution_new(o)) !F_VECTOR is Solution to DF*F=F
-      END DO
+      !Find the L2 error for this step of Newton's method
+      ERROR = L2NORM(F_VECTOR, linearsize) 
+
       Solution_old = Solution_new
 			F_VECTOR = F() !Reevaluates F since it was replaced by solution to DF*F=F
+      
+      WRITE (*, *) "error=", ERROR !Writes error to screen
+      IF (ERROR <= EPSILON) THEN !Checks for convergence
+				!Check second Criterion
+				IF (L2NORM(F_vector,linearsize) <= EPSILON) THEN
+          EXIT
+				ELSE !States why it still has not converged
+					WRITE (*,*) "Second Criterion not met MAX(F)=", MAXVAL(F_VECTOR)
+				END IF
+      END IF
     END DO
   END SUBROUTINE NEWTON
 

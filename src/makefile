@@ -4,8 +4,14 @@
 FC = gfortran
 #PROGRAM = Henry 
 PROGRAM = Hnew
-SRCS = Henry_funcs.f90 Henry_sums.f90 LU.f90 
-OBJS = Henry_funcs.o Henry_sums.o LU.o
+
+ifeq ($(PROGRAM), Hnew)
+  SRCS = Henry_funcs.f90 Henry_sums.f90 linpacks.f90 
+  OBJS = Henry_funcs.o Henry_sums.o linpacks.o
+else
+  SRCS = Henry_funcs.f90 Henry_sums.f90 LU.f90 
+  OBJS = Henry_funcs.o Henry_sums.o LU.o
+endif
 
 FCFLAGS =
 OBJFLAGS = -c
