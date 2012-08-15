@@ -122,6 +122,7 @@ PROGRAM Henrys_Problem
 !**************************************** Begin supporting FUNCTIONS ************************
   CONTAINS
 
+  !This will create the Left Hand Side and Right Hand Side for the Henry Method
   SUBROUTINE build_system(LHS, RHS)
     REAL, INTENT(INOUT) :: LHS(:,:), RHS(:)
     INTEGER :: i, g, h
@@ -194,6 +195,7 @@ PROGRAM Henrys_Problem
     END IF
   END SUBROUTINE BgANDh
 
+  !Create the Nonlinear term for a particular g,h 
   FUNCTION QuadVal(g,h)
     INTEGER, INTENT(IN) :: g, h
     INTEGER :: m, n, r, s
@@ -213,6 +215,7 @@ PROGRAM Henrys_Problem
     END DO
   END FUNCTION QuadVal
 
+  !Create the vector associated with the sum of the B(r,h) terms
   FUNCTION Br(g,h)
     REAL :: Br(0:i_b)
     INTEGER, INTENT(IN) :: g, h
@@ -223,6 +226,7 @@ PROGRAM Henrys_Problem
     END DO
   END FUNCTION
 
+  !Create the vector associated with the sum of the A(g,n) terms
   FUNCTION An(g,h)
     REAL :: An(0:j_a)
     INTEGER, INTENT(IN) :: g, h
@@ -233,6 +237,7 @@ PROGRAM Henrys_Problem
     END DO
   END FUNCTION
 
+  !Create the vector associated with the sum of the B(g,s) terms
   FUNCTION Bs(h)
     REAL :: Bs(j_b)
     INTEGER, INTENT(IN) :: h
