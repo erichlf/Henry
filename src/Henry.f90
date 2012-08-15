@@ -11,26 +11,26 @@
 !      + epsilon_1*sum{B_{g,s}*s*N(h,s),s=1..infinity} + 4/pi*W(h,g)}
 !      {epsilon_1*b*pi**2*[g**2+h**2/xi**2]*xi}
 ! Where A and B are both two-dimensional matrices.
-! A      : Fourier coefficients for Psi
-! B      : Fourier coefficients for C
-! a=Q/(k_1*d): dimensionless
-! b=D/Q    : dimensionless
-! d      : thickness of aquifer, m
-! D      : dispersion coefficient, m**2/sec
-! E      : dimensionless coefficient relating the concentration to
-!      : the density of the solution
-! k      : permeability of sand, m**2
-! kbar=k*rho_0*g/mu  : transmission coefficient of aquifer, m/sec
-! k_1=kbar*(rho_s-rho_o)/rho_o : transmission coefficient times the density-difference
-!      : ratio
-! l      : length of aquifer, m
-! Q      : net freshwater discharge per unit length of beach,
-!      : m**2/sec
-! rho    : density of solution, kg/m**3
-! rho_o    : density of freshwater, kg/m**3
-! rho_s    : density of saltwater, kg/m**3
-! mu    : viscosity of water, N-sec/m**2
-! xi=l/d  : aspect ratio
+! A                             : Fourier coefficients for Psi
+! B                             : Fourier coefficients for C
+! a=Q/(k_1*d)                   : dimensionless
+! b=D/Q                         : dimensionless
+! d                             : thickness of aquifer, m
+! D                             : dispersion coefficient, m**2/sec
+! E                             : dimensionless coefficient relating the concentration to
+!                               : the density of the solution
+! k                             : permeability of sand, m**2
+! kbar=k*rho_0*g/mu             : transmission coefficient of aquifer, m/sec
+! k_1=kbar*(rho_s-rho_o)/rho_o  : transmission coefficient times the density-difference
+!                               : ratio
+! l                             : length of aquifer, m
+! Q                             : net freshwater discharge per unit length of beach,
+!                               : m**2/sec
+! rho                           : density of solution, kg/m**3
+! rho_o                         : density of freshwater, kg/m**3
+! rho_s                         : density of saltwater, kg/m**3
+! mu                            : viscosity of water, N-sec/m**2
+! xi=l/d                        : aspect ratio
 !********************************************************************************************
 PROGRAM Henrys_Problem
   
@@ -54,7 +54,7 @@ PROGRAM Henrys_Problem
   INTEGER :: AllocateStatus !Status variable for ALLOCATE
   REAL :: EPSILON = 5E-4
 
-100     FORMAT("error=",F5.3)
+100     FORMAT("error=",ES8.2)
   OPEN(30, FILE='Psi0_1.txt')
   OPEN(31,FILE='C0_1.txt')
 
@@ -156,7 +156,6 @@ PROGRAM Henrys_Problem
         !Nonlinear and linear terms which are considered constants and so are on the RHS
         RHS(i) = pid4*QuadVal(g,h) + fourdpi*W_FUNC(h,g) 
       END IF
-      
     END DO
   END SUBROUTINE
 
