@@ -1,89 +1,74 @@
 MODULE Henry_funcs
+!This provides the various functions associated with the Henry problem
   
   IMPLICIT none
   REAL*8, PARAMETER :: pi = 4*ATAN(1.)
   REAL*8, PARAMETER :: pi2 = pi**2
+  REAL*8, PARAMETER :: pid4 = pi/4., fourdpi = 4./pi
   
   CONTAINS
 
-  FUNCTION F_FUNC(m, r, g)
-              
+  FUNCTION F_Func(m, r, g)
     INTEGER, INTENT(IN) :: m, r, g
-    INTEGER :: F_FUNC
+    INTEGER :: F_Func
 
-    F_FUNC = delta(m - r, g) + delta(r - m, g) - delta(m + r, g)
-              
-  END FUNCTION F_FUNC
+    F_Func = delta(m - r, g) + delta(r - m, g) - delta(m + r, g)
+  END FUNCTION F_Func
         
-  FUNCTION L_FUNC(m, r, g)
-              
+  FUNCTION L_Func(m, r, g)
     INTEGER, INTENT(IN) :: m, r, g
-    INTEGER :: L_FUNC
+    INTEGER :: L_Func
               
-    L_FUNC = delta(m - r, g) + delta(r - m, g) + delta(m + r, g)
+    L_Func = delta(m - r, g) + delta(r - m, g) + delta(m + r, g)
+  END FUNCTION L_Func
 
-  END FUNCTION L_FUNC
-
-  FUNCTION G_FUNC(h, n, s)
-
+  FUNCTION G_Func(h, n, s)
     INTEGER, INTENT(IN) :: h, n, s
-    REAL :: G_FUNC
+    REAL :: G_Func
     
-    G_FUNC=T_FUNC(h+n-s)+T_FUNC(h-n+s)-T_FUNC(h+n+s)-T_FUNC(h-n-s)
+    G_Func=T_Func(h+n-s)+T_Func(h-n+s)-T_Func(h+n+s)-T_Func(h-n-s)
+  END FUNCTION G_Func
 
-  END FUNCTION G_FUNC
-
-  FUNCTION R_FUNC(h, n, s)
-
+  FUNCTION R_Func(h, n, s)
     INTEGER, INTENT(IN) :: h, n, s
-    REAL :: R_FUNC
+    REAL :: R_Func
 
-    R_FUNC=T_FUNC(h+n-s)+T_FUNC(h-n+s)+T_FUNC(h+n+s)+T_FUNC(h-n-s)
-
-  END FUNCTION R_FUNC
+    R_Func=T_Func(h+n-s)+T_Func(h-n+s)+T_Func(h+n+s)+T_Func(h-n-s)
+  END FUNCTION R_Func
   
-  FUNCTION T_FUNC(i)
-
+  FUNCTION T_Func(i)
     INTEGER, INTENT(IN) :: i
-    REAL :: T_FUNC
+    REAL :: T_Func
 
     IF(i == 0) THEN
-      T_FUNC = 0.
+      T_Func = 0.
     ELSE
-      T_FUNC = REAL((-1)**i-1)/REAL(i)
+      T_Func = REAL((-1)**i-1)/REAL(i)
     END IF
+  END FUNCTION T_Func
 
-  END FUNCTION T_FUNC
-
-  FUNCTION N_FUNC(h, n)
-
+  FUNCTION N_Func(h, n)
     INTEGER, INTENT(IN) :: h, n
-    REAL :: N_FUNC
+    REAL :: N_Func
 
-    N_FUNC = T_FUNC(h + n) + T_FUNC(h - n)
+    N_Func = T_Func(h + n) + T_Func(h - n)
+  END FUNCTION N_Func
 
-  END FUNCTION N_FUNC
-
-  FUNCTION W_FUNC(h, g)                !((-1)**h - 1)/h if g=0 and 0 otherwise
-
+  FUNCTION W_Func(h, g) !((-1)**h - 1)/h if g=0 and 0 otherwise
     INTEGER, INTENT(IN) :: h, g
-    REAL :: W_FUNC
+    REAL :: W_Func
 
-    W_FUNC = T_FUNC(h)*delta(g, 0)
-
-  END FUNCTION W_FUNC
+    W_Func = T_Func(h)*delta(g, 0)
+  END FUNCTION W_Func
 
   FUNCTION eps(e)
-
     INTEGER, INTENT(IN) :: e
     INTEGER :: eps
 
-    eps = delta(e, 0) + 1                ! 2 if e=0 and 1 otherwise
-
+    eps = delta(e, 0) + 1  ! 2 if e=0 and 1 otherwise
   END FUNCTION eps
 
-  FUNCTION delta(i, j)                !Kronecker delta function 1 if i=j and 0 otherwise
-
+  FUNCTION delta(i, j) !Kronecker delta function 1 if i=j and 0 otherwise
     INTEGER, INTENT(IN) :: i, j
     INTEGER :: delta
                 
@@ -92,7 +77,6 @@ MODULE Henry_funcs
     ELSE
       delta = 0
     END IF
-
   END FUNCTION delta
 
 END MODULE Henry_funcs

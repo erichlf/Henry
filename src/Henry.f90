@@ -39,20 +39,27 @@ PROGRAM Henrys_Problem
   USE LU
   IMPLICIT NONE
 
-  REAL, DIMENSION(:, :), ALLOCATABLE :: A_Matrix, B_Matrix, LHS !Matrices of Fourier Coefficients
-  REAL, DIMENSION(:), ALLOCATABLE :: RHS, RHS_old !Quadratic and linear terms
-  REAL, DIMENSION(:, :), ALLOCATABLE :: Psi, C !Streamlines and Isochlors
+  REAL, PARAMETER :: epsilon = 5E-4
+
+  REAL, PARAMETER :: a = 0.263, b = 0.1 
+  REAL, PARAMETER :: d = 1.0, l = 2.0, dx = 0.05, dy= 0.05 
+  REAL :: xi, xi2, api2, bpi2
+
+  REAL, DIMENSION(:, :), ALLOCATABLE :: A_Matrix, B_Matrix, LHS 
+  REAL, DIMENSION(:), ALLOCATABLE :: RHS, RHS_old 
+  REAL, DIMENSION(:, :), ALLOCATABLE :: Psi, C 
+  REAL, DIMENSION(:), ALLOCATABLE :: x, y 
+
+  !LU decomp stuff
   INTEGER, DIMENSION(:), ALLOCATABLE :: indx
   REAL :: d0
-  REAL, DIMENSION(:), ALLOCATABLE :: x, y !Grid
-  REAL, PARAMETER :: a = 0.263, b = 0.1, d = 1.0, l = 2.0, dx = 0.05, dy= 0.05 !Problem parameters
-  REAL :: xi, pid4, fourdpi, xi2, api2, bpi2 !Constants
+  
   REAL :: error
+
   INTEGER :: h_a(5), h_b(0:4) !Size of h depends on both i and which coefficient A or B
-  INTEGER :: i_a, i_b, j_a, j_b, i_y, j_x, linearsize !Size of the Matrices
-  INTEGER :: g, h !Loop counters
+  INTEGER :: i_a, i_b, j_a, j_b, i_y, j_x, linearsize 
+  
   INTEGER :: AllocateStatus !Status variable for ALLOCATE
-  REAL :: EPSILON = 5E-4
 
 100     FORMAT("error=",ES8.2)
   OPEN(30, FILE='Psi0_1.txt')
@@ -69,11 +76,9 @@ PROGRAM Henrys_Problem
   j_x = NINT(l/dx)
   xi = l/d
 
-  pid4 = pi/4.
-  fourdpi = 4./pi
   xi2 = xi**2
-  api2 = a*pi**2
-  bpi2 = b*pi**2
+  api2 = a*pi2
+  bpi2 = b*pi2
 
   linearsize = i_a*(j_a+1)+(i_b+1)*j_b
 
@@ -83,35 +88,33 @@ PROGRAM Henrys_Problem
     STAT = AllocateStatus) 
   IF(AllocateStatus /= 0) STOP "*** NOT ENOUGH MEMORY ***"
 
-  A_Matrix = 0. !Initializes array so that A = B = 0
+  A_Matrix = 0. 
   B_Matrix = 0. 
   RHS_old = 0.
 
-  x_loop0: DO h = 0, j_x     !Initializing the values for x
-    x(h) = dx*h
-  END DO x_loop0
-
-  y_loop0: DO g = 0, i_y     !Initializing the values for y
-    y(g) = dy*g
-  END DO y_loop0
+  CALL initialize()
   
-  error = 1. !Initialize error terms
+  error = 1.
   WRITE (*,*) 'b=', b
 
-  DO WHILE(error > EPSILON)
+  DO WHILE(error > epsilon)
     CALL build_system(LHS,RHS) 
 
-    CALL ludcmp(LHS, linearsize, linearsize, indx, d0) !Replaces LHS with its LU decomposition
-    CALL lubksb(LHS, linearsize, linearsize, indx, RHS) !Solves A*x=B using ludcmp
+    !Replaces LHS with its LU decomposition
+    CALL ludcmp(LHS, linearsize, linearsize, indx, d0) 
+    !Solves A*x=B using ludcmp
+    CALL lubksb(LHS, linearsize, linearsize, indx, RHS) 
 
-    CALL AssignAandB(RHS) !Translates RHS into A and B matrices
+    !Translates RHS into A and B matrices
+    CALL AssignAandB(RHS) 
 
     error = L2Norm(RHS - RHS_old)/L2Norm(RHS_old)
     WRITE(*,100) error
     RHS_old = RHS
   END DO
 
-  CALL PsiAndC() !Assigns Psi and C based on A and B
+  !Assigns Psi and C based on A and B
+  CALL PsiAndC() 
   CALL WriteToFile()
 
   CLOSE (30)
@@ -119,7 +122,6 @@ PROGRAM Henrys_Problem
 
   DEALLOCATE(A_Matrix, B_Matrix, Psi, C, x, y, LHS, RHS)
 
-!**************************************** Begin supporting FUNCTIONS ************************
   CONTAINS
 
   !This will create the Left Hand Side and Right Hand Side for the Henry Method
@@ -276,6 +278,18 @@ PROGRAM Henrys_Problem
 
     L2Norm = L2Norm**0.5
   END FUNCTION L2NORM
+  
+  SUBROUTINE initialize()
+    INTEGER :: i
+
+    x_loop0: DO i = 0, j_x     !Initializing the values for x
+      x(i) = dx*i
+    END DO x_loop0
+
+    y_loop0: DO i = 0, i_y     !Initializing the values for y
+      y(i) = dy*i
+    END DO y_loop0
+  END SUBROUTINE initialize
 
   SUBROUTINE PsiAndC()
     INTEGER :: g, h
@@ -294,8 +308,8 @@ PROGRAM Henrys_Problem
           Psi(g, h) = 0.
           C(g, h) = 0.
         ELSE
-          Psi(g, h) = SUM_A(A_Matrix, x, y, xi, g, h, i_a, j_a, i_y, j_x) + y(g)/d
-          C(g, h) = SUM_B(B_Matrix, x, y, xi, g, h, i_b, j_b, i_y, j_x) + x(h)/(d*xi)
+          Psi(g, h) = Sum_A(A_Matrix, x, y, xi, g, h, i_a, j_a, i_y, j_x) + y(g)/d
+          C(g, h) = Sum_B(B_Matrix, x, y, xi, g, h, i_b, j_b, i_y, j_x) + x(h)/(d*xi)
         END IF
       END DO
     END DO
