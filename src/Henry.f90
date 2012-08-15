@@ -153,7 +153,7 @@ PROGRAM Henrys_Problem
       !Entries associated with B(g,h)
       ELSE
         CALL BgANDh(i,g,h)
-        WRITE(*,*) "B(",g, ",", h,")"
+!        WRITE(*,*) "B(",g, ",", h,")"
         LHS(i,i) = eps(g)*bpi2*(g**2 + h**2/xi2)*xi
 
         !This is the sum of A(g,n) terms
@@ -163,7 +163,7 @@ PROGRAM Henrys_Problem
           LHS(i,start:finish) = -An(g,h)
         END IF
         !This is the sum of B(g,s) terms
-        WRITE(*,*) eps(g)*Bs(h)
+!        WRITE(*,*) eps(g)*Bs(h)
         start = i_a*(j_a+1) + g*j_b+1
         finish = i_a*(j_a+1) + (g+1)*j_b
         LHS(i,start:finish) = LHS(i,start:finish) - eps(g)*Bs(h)
@@ -197,11 +197,11 @@ PROGRAM Henrys_Problem
 
     r = i - i_a*(j_a + 1)
     h = MOD(r, j_b)
-    g = (r - h)/j_b 
 
     IF (h == 0) THEN
       h = j_b
     END IF
+    g = (r - h)/j_b 
   END SUBROUTINE BgANDh
 
   !Create the Nonlinear term for a particular g,h 
