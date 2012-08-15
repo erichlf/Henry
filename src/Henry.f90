@@ -1,6 +1,5 @@
-!     Last change:  SW   31 Oct 2005   12:16 pm
 !********************************************************************************************
-! This program solves Henry's problem
+! This program solves Henry's problem using the Henry Method
 ! Psi = sum{sum{A_{m,n}*sin(m*pi*y)*cos(n*pi*x/xi), n=0..infinity}, m=1..infinity}
 ! Psi = sum{sum{B_{r,s}*sin(s*pi*x/xi)*cos(r*pi*y), s=1..infinity}, r=0..infinity}
 ! A_{g,h} = frac{sum{B_{r,h}*h*N(g,r),r=0..infinity} + 4/pi*W(g,h)}
@@ -41,7 +40,7 @@ PROGRAM Henrys_Problem
 
   REAL, PARAMETER :: epsilon = 5E-4
 
-  REAL, PARAMETER :: a = 0.263, b = 0.1 
+  REAL, PARAMETER :: a = 1/pi2, b=1/pi2 !0.263, b = 0.1 
   REAL, PARAMETER :: d = 1.0, l = 2.0, dx = 0.05, dy= 0.05 
   REAL :: xi, xi2, api2, bpi2
 
@@ -56,8 +55,8 @@ PROGRAM Henrys_Problem
   
   REAL :: error
 
-  INTEGER :: h_a(5), h_b(0:4) !Size of h depends on both i and which coefficient A or B
-  INTEGER :: i_a, i_b, j_a, j_b, i_y, j_x, linearsize 
+  INTEGER :: h_a(2), h_b(0:1) !Size of h depends on both i and which coefficient A or B
+  INTEGER :: i_a, i_b, j_a, j_b, i_y, j_x, linearsize,i 
   
   INTEGER :: AllocateStatus !Status variable for ALLOCATE
 
@@ -65,16 +64,16 @@ PROGRAM Henrys_Problem
   OPEN(30, FILE='Psi0_1.txt')
   OPEN(31,FILE='C0_1.txt')
 
-  h_a = (/ 15, 10, 5, 3, 2 /)
-  h_b = (/ 20, 10, 5, 3, 2 /)
+  h_a = 1!(/ 15, 10, 5, 3, 2 /)
+  h_b = 2!(/ 20, 10, 5, 3, 2 /)
 
-  i_a = 5
-  i_b = 4
+  i_a = SIZE(h_a,1)
+  i_b = SIZE(h_b,1) - 1
   j_a = MAXVAL(h_a)
   j_b = MAXVAL(h_b)
   i_y = NINT(d/dy)
   j_x = NINT(l/dx)
-  xi = l/d
+  xi = 1!l/d
 
   xi2 = xi**2
   api2 = a*pi2
@@ -99,6 +98,10 @@ PROGRAM Henrys_Problem
 
   DO WHILE(error > epsilon)
     CALL build_system(LHS,RHS) 
+    DO i=1,linearsize
+      WRITE(*,*) LHS(i,:), "|", pid4*RHS(i)
+    END DO
+    STOP
 
     !Replaces LHS with its LU decomposition
     CALL ludcmp(LHS, linearsize, linearsize, indx, d0) 
@@ -110,7 +113,7 @@ PROGRAM Henrys_Problem
 
     error = L2Norm(RHS - RHS_old)/L2Norm(RHS_old)
     WRITE(*,100) error
-    RHS_old = RHS
+    RHS_old = RHS 
   END DO
 
   !Assigns Psi and C based on A and B
@@ -127,34 +130,44 @@ PROGRAM Henrys_Problem
   !This will create the Left Hand Side and Right Hand Side for the Henry Method
   SUBROUTINE build_system(LHS, RHS)
     REAL, INTENT(INOUT) :: LHS(:,:), RHS(:)
-    INTEGER :: i, g, h
+    INTEGER :: i, g, h,start, finish, stride
     
     LHS = 0.
     RHS = 0.
 
     DO i=1, linearsize
       !Entries associated with A(g,h)
-      IF(i .LE. i_a*(j_b+1)) THEN
+      IF(i .LE. i_a*(j_a+1)) THEN
         CALL AgANDh(i,g,h)
+!        WRITE(*,*) "A(",g, ",", h,")"
         LHS(i,i) = eps(h)*api2*(g**2 + h**2/xi2)*xi
 
         !This part is for the sum of B(r,h) terms
         IF(h/=0) THEN
-          LHS(i,i_a*(j_a+1)+1::j_b+1) = -Br(g,h)
+          start = i_a*(j_b+1)+1
+          stride = j_b
+          LHS(i,start::stride) = -Br(g,h)
         END IF
         !Nonlinear and linear terms which are considered constants and so are on the RHS
         RHS(i) = RHS(i) + fourdpi*W_FUNC(g,h)
       !Entries associated with B(g,h)
       ELSE
         CALL BgANDh(i,g,h)
+        WRITE(*,*) "B(",g, ",", h,")"
         LHS(i,i) = eps(g)*bpi2*(g**2 + h**2/xi2)*xi
 
         !This is the sum of A(g,n) terms
         IF(g/=0) THEN
-          LHS(i,g*(j_a+1):g*(j_a+1)+j_a) = -An(g,h)
+          start = g*(j_a+1)
+          finish = g*(j_a+1)+j_a
+          LHS(i,start:finish) = -An(g,h)
         END IF
         !This is the sum of B(g,s) terms
-        LHS(i,i_a*(j_a+1)+g*j_b+1:i_a*(j_a+1)+(g+1)*j_b) = LHS(i,i_a*(j_a+1)+g*j_b+1:i_a*(j_a+1)+(g+1)*j_b) - eps(g)*Bs(h)
+        WRITE(*,*) eps(g)*Bs(h)
+        start = i_a*(j_a+1) + g*j_b+1
+        finish = i_a*(j_a+1) + (g+1)*j_b
+        LHS(i,start:finish) = LHS(i,start:finish) - eps(g)*Bs(h)
+
         !Nonlinear and linear terms which are considered constants and so are on the RHS
         RHS(i) = pid4*QuadVal(g,h) + fourdpi*W_FUNC(h,g) 
       END IF
@@ -166,17 +179,15 @@ PROGRAM Henrys_Problem
     INTEGER*4, INTENT(OUT) :: g, h
     INTEGER*4 :: q
 
-    g = MOD(i,j_a+1)
+    h = MOD(i, j_a + 1)
+    g = (i - h)/(j_a+1) + 1
+    h = h - 1
 
-    DO q = 1, i_a !Determine g and h
-      IF (i >= (q - 1)*j_a + q .AND. i <= q*j_a + q) THEN
-        g = q
-      END IF
-    END DO
-    h = MOD(i, j_a + 1) - 1
     IF (h < 0) THEN
       h = j_a
+      g = g - 1
     END IF
+
   END SUBROUTINE AgANDh
 
   SUBROUTINE BgANDh(i, g, h) !Determines g and h given i inside the B section of LHS or RHS
@@ -185,12 +196,9 @@ PROGRAM Henrys_Problem
     INTEGER*4 :: q, r
 
     r = i - i_a*(j_a + 1)
-    DO q = 0, i_b
-      IF (r >= q*j_b + 1 .AND. r <= (q + 1)*j_b) THEN
-        g = q
-      END IF
-    END DO
     h = MOD(r, j_b)
+    g = (r - h)/j_b 
+
     IF (h == 0) THEN
       h = j_b
     END IF
