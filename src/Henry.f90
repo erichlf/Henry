@@ -54,16 +54,9 @@ PROGRAM Henrys_Problem
   INTEGER :: AllocateStatus !Status variable for ALLOCATE
   REAL :: EPSILON = 5E-4
 
-  !WRITE (*,*), "Enter in the size of aquifer (d = thickness l = length) in meters."
-  !READ *, d, l
-  !WRITE (*,*), "Enter in the partition size (dx, dy)."
-  !READ *, dx, dy
-  !WRITE (*,*), "Now enter in your values for a and b."
-  !READ *, a, b
-
+100     FORMAT("error=",F5.3)
   OPEN(30, FILE='Psi0_1.txt')
   OPEN(31,FILE='C0_1.txt')
-  !OPEN (32, "B2h.txt")
 
   h_a = (/ 15, 10, 5, 3, 2 /)
   h_b = (/ 20, 10, 5, 3, 2 /)
@@ -86,7 +79,8 @@ PROGRAM Henrys_Problem
 
   ALLOCATE(A_Matrix(i_a, 0:j_a), B_Matrix(0:i_b, j_b), Psi(0:i_y, 0:j_x), &
     C(0:i_y, 0:j_x), x(0:j_x), y(0:i_y), LHS(linearsize, linearsize), &
-    RHS(linearsize), RHS_old(linearsize), STAT = AllocateStatus) 
+    RHS(linearsize), RHS_old(linearsize), indx(linearsize), &
+    STAT = AllocateStatus) 
   IF(AllocateStatus /= 0) STOP "*** NOT ENOUGH MEMORY ***"
 
   A_Matrix = 0. !Initializes array so that A = B = 0
@@ -106,15 +100,19 @@ PROGRAM Henrys_Problem
 
   DO WHILE(error > EPSILON)
     CALL build_system(LHS,RHS) 
+
     CALL ludcmp(LHS, linearsize, linearsize, indx, d0) !Replaces LHS with its LU decomposition
+
     CALL lubksb(LHS, linearsize, linearsize, indx, RHS) !Solves A*x=B using ludcmp
 
     CALL AssignAandB(RHS) !Translates RHS into A and B matrices
 
     error = L2Norm(RHS - RHS_old)/L2Norm(RHS_old)
+    WRITE(*,100) error
     RHS_old = RHS
   END DO
 
+  CALL PsiAndC() !Assigns Psi and C based on A and B
   CALL WriteToFile()
 
   CLOSE (30)
@@ -132,19 +130,24 @@ PROGRAM Henrys_Problem
     LHS = 0.
     RHS = 0.
 
-    DO i=1, SIZE(LHS,1)
+    DO i=1, linearsize
       !Entries associated with A(g,h)
       IF(i .LE. i_a*(j_b+1)) THEN
         CALL AgANDh(i,g,h)
         LHS(i,i) = eps(h)*api2*(g**2 + h**2/xi2)*xi
 
-        LHS(i,i_a*(j_a+1)+1::j_b+1) = -Br(g,h)
+        IF(h/=0) THEN
+          LHS(i,i_a*(j_a+1)+1::j_b+1) = -Br(g,h)
+        END IF
       !Entries associated with B(g,h)
       ELSE
         CALL BgANDh(i,g,h)
         LHS(i,i) = eps(g)*bpi2*(g**2 + h**2/xi2)*xi
 
-        LHS(i,g*(j_a+1):g*(j_a+1)+j_a) = -An(g,h)
+        IF(g/=0) THEN
+          LHS(i,g*(j_a+1):g*(j_a+1)+j_a) = -An(g,h)
+        END IF
+
         LHS(i,i_a*(j_a+1)+g*j_b+1:i_a*(j_a+1)+(g+1)*j_b) = LHS(i,i_a*(j_a+1)+g*j_b+1:i_a*(j_a+1)+(g+1)*j_b) - eps(g)*Bs(h)
         RHS(i) = pid4*QuadVal(g,h) 
       END IF
@@ -152,7 +155,7 @@ PROGRAM Henrys_Problem
     END DO
   END SUBROUTINE
 
-  SUBROUTINE AgANDh(i, g, h) !Determines g and h given i inside A section of matrix or vector
+  SUBROUTINE AgANDh(i, g, h) !Determines g and h given i inside the A section of LHS or RHS
     INTEGER*4, INTENT(IN) :: i
     INTEGER*4, INTENT(OUT) :: g, h
     INTEGER*4 :: q
@@ -170,7 +173,7 @@ PROGRAM Henrys_Problem
     END IF
   END SUBROUTINE AgANDh
 
-  SUBROUTINE BgANDh(i, g, h) !Determines g and h given i inside B section of matrix or vector
+  SUBROUTINE BgANDh(i, g, h) !Determines g and h given i inside the B section of LHS or RHS
     INTEGER*4, INTENT(IN) :: i
     INTEGER*4, INTENT(OUT) :: g, h
     INTEGER*4 :: q, r
@@ -221,7 +224,7 @@ PROGRAM Henrys_Problem
     INTEGER, INTENT(IN) :: g, h
     INTEGER :: n
 
-    DO n=0,j_b
+    DO n=0,j_a
       An(n) = g*N_FUNC(h,n)
     END DO
   END FUNCTION
@@ -265,6 +268,30 @@ PROGRAM Henrys_Problem
 
     L2Norm = L2Norm**0.5
   END FUNCTION L2NORM
+
+  SUBROUTINE PsiAndC()
+    INTEGER :: g, h
+
+    DO h = 0, j_x     !Initializing the values for x
+      x(h) = dx*h
+    END DO
+
+    DO g = 0, i_y     !Initializing the values for y
+            y(g) = dy*g
+    END DO
+
+    DO g = 0, i_y !Find Psi(g, h) and C(g, h)
+      DO h = 0, j_x
+        IF (g == 0 .AND. h == 0) THEN
+          Psi(g, h) = 0.
+          C(g, h) = 0.
+        ELSE
+          Psi(g, h) = SUM_A(A_Matrix, x, y, xi, g, h, i_a, j_a, i_y, j_x) + y(g)/d
+          C(g, h) = SUM_B(B_Matrix, x, y, xi, g, h, i_b, j_b, i_y, j_x) + x(h)/(d*xi)
+        END IF
+      END DO
+    END DO
+  END SUBROUTINE PSIANDC
 
   SUBROUTINE WriteToFile()
     INTEGER :: g, h
