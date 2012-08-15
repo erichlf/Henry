@@ -102,7 +102,6 @@ PROGRAM Henrys_Problem
     CALL build_system(LHS,RHS) 
 
     CALL ludcmp(LHS, linearsize, linearsize, indx, d0) !Replaces LHS with its LU decomposition
-
     CALL lubksb(LHS, linearsize, linearsize, indx, RHS) !Solves A*x=B using ludcmp
 
     CALL AssignAandB(RHS) !Translates RHS into A and B matrices
@@ -136,22 +135,27 @@ PROGRAM Henrys_Problem
         CALL AgANDh(i,g,h)
         LHS(i,i) = eps(h)*api2*(g**2 + h**2/xi2)*xi
 
+        !This part is for the sum of B(r,h) terms
         IF(h/=0) THEN
           LHS(i,i_a*(j_a+1)+1::j_b+1) = -Br(g,h)
         END IF
+        !Nonlinear and linear terms which are considered constants and so are on the RHS
+        RHS(i) = RHS(i) + fourdpi*W_FUNC(g,h)
       !Entries associated with B(g,h)
       ELSE
         CALL BgANDh(i,g,h)
         LHS(i,i) = eps(g)*bpi2*(g**2 + h**2/xi2)*xi
 
+        !This is the sum of A(g,n) terms
         IF(g/=0) THEN
           LHS(i,g*(j_a+1):g*(j_a+1)+j_a) = -An(g,h)
         END IF
-
+        !This is the sum of B(g,s) terms
         LHS(i,i_a*(j_a+1)+g*j_b+1:i_a*(j_a+1)+(g+1)*j_b) = LHS(i,i_a*(j_a+1)+g*j_b+1:i_a*(j_a+1)+(g+1)*j_b) - eps(g)*Bs(h)
-        RHS(i) = pid4*QuadVal(g,h) 
+        !Nonlinear and linear terms which are considered constants and so are on the RHS
+        RHS(i) = pid4*QuadVal(g,h) + fourdpi*W_FUNC(h,g) 
       END IF
-      RHS(i) = RHS(i) + fourdpi*W_FUNC(g,h)
+      
     END DO
   END SUBROUTINE
 
