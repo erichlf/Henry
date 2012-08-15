@@ -18,10 +18,10 @@ OBJFLAGS = -c
 
 all: $(PROGRAM)
 
-$(PROGRAM): $(OBJS) 
-	$(FC) $(FCFLAGS) -o $@ $@.f90 $^ 
 $(OBJS): $(SRCS)
 	$(FC) $(OBJFLAGS) -o $@ $*.f90
+$(PROGRAM): $(OBJS) 
+	$(FC) $(FCFLAGS) -o $@ $@.f90 $^ 
 clean:
 	rm *.mod *.o *.txt
 # End of the makefile

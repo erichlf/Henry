@@ -39,17 +39,18 @@ PROGRAM Henrys_Problem
   USE LU
   IMPLICIT NONE
 
-  REAL, DIMENSION(:, :), ALLOCATABLE :: MATRIX_A, MATRIX_B, Matrix !Matrices of Fourier Coefficients
-  REAL, DIMENSION(:, :), ALLOCATABLE :: quad, linear !Quadratic and linear terms
-  REAL, DIMENSION(:, :), ALLOCATABLE :: Psi, C !Stramlines and Isochlors
+  REAL, DIMENSION(:, :), ALLOCATABLE :: A_Matrix, B_Matrix, LHS !Matrices of Fourier Coefficients
+  REAL, DIMENSION(:), ALLOCATABLE :: RHS, RHS_old !Quadratic and linear terms
+  REAL, DIMENSION(:, :), ALLOCATABLE :: Psi, C !Streamlines and Isochlors
   INTEGER, DIMENSION(:), ALLOCATABLE :: indx
+  REAL :: d0
   REAL, DIMENSION(:), ALLOCATABLE :: x, y !Grid
   REAL, PARAMETER :: a = 0.263, b = 0.1, d = 1.0, l = 2.0, dx = 0.05, dy= 0.05 !Problem parameters
   REAL :: xi, pid4, fourdpi, xi2, api2, bpi2 !Constants
-  REAL :: Psi_err, C_err, ERROR
+  REAL :: error
   INTEGER :: h_a(5), h_b(0:4) !Size of h depends on both i and which coefficient A or B
-  INTEGER :: i_a, i_b, j_a, j_b, i_y, j_x !Size of the Matrices
-  INTEGER :: g, h, m, n, p, q, r, s !Loop counters
+  INTEGER :: i_a, i_b, j_a, j_b, i_y, j_x, linearsize !Size of the Matrices
+  INTEGER :: g, h !Loop counters
   INTEGER :: AllocateStatus !Status variable for ALLOCATE
   REAL :: EPSILON = 5E-4
 
@@ -81,14 +82,16 @@ PROGRAM Henrys_Problem
   api2 = a*pi**2
   bpi2 = b*pi**2
 
+  linearsize = i_a*(j_a+1)+(i_b+1)*j_b
 
-
-  ALLOCATE(MATRIX_A(i_a, 0:j_a), MATRIX_B(0:i_b, j_b), quad(0:i_b, j_b), linear(i_b, j_b), Psi(0:i_y, 0:j_x), &
-    C(0:i_y, 0:j_x), x(0:j_x), y(0:i_y), Matrix(i_a*(j_a+1)+(i_b+1)*j_b,i_a*(j_a+1)+(i_b+1)*j_b), STAT = AllocateStatus)
+  ALLOCATE(A_Matrix(i_a, 0:j_a), B_Matrix(0:i_b, j_b), Psi(0:i_y, 0:j_x), &
+    C(0:i_y, 0:j_x), x(0:j_x), y(0:i_y), LHS(linearsize, linearsize), &
+    RHS(linearsize), RHS_old(linearsize), STAT = AllocateStatus) 
   IF(AllocateStatus /= 0) STOP "*** NOT ENOUGH MEMORY ***"
 
-  MATRIX_A = 0. !Initializes array so that A = B = 0
-  MATRIX_B = 0. 
+  A_Matrix = 0. !Initializes array so that A = B = 0
+  B_Matrix = 0. 
+  RHS_old = 0.
 
   x_loop0: DO h = 0, j_x     !Initializing the values for x
     x(h) = dx*h
@@ -101,53 +104,173 @@ PROGRAM Henrys_Problem
   error = 1. !Initialize error terms
   WRITE (*,*) 'b=', b
 
-  CALL build_system() 
+  DO WHILE(error > EPSILON)
+    CALL build_system(LHS,RHS) 
+    CALL ludcmp(LHS, linearsize, linearsize, indx, d0) !Replaces LHS with its LU decomposition
+    CALL lubksb(LHS, linearsize, linearsize, indx, RHS) !Solves A*x=B using ludcmp
 
-  CALL WRITETOFILE(Psi, C, x, y, i_y, j_x)
+    CALL AssignAandB(RHS) !Translates RHS into A and B matrices
+
+    error = L2Norm(RHS - RHS_old)/L2Norm(RHS_old)
+    RHS_old = RHS
+  END DO
+
+  CALL WriteToFile()
 
   CLOSE (30)
   CLOSE (31)
-  !CLOSE (32)
 
-  DEALLOCATE(MATRIX_A, MATRIX_B, quad, linear, Psi, C, x, y)
+  DEALLOCATE(A_Matrix, B_Matrix, Psi, C, x, y, LHS, RHS)
 
 !**************************************** Begin supporting FUNCTIONS ************************
-        
   CONTAINS
 
-  SUBROUTINE build_system()
-    INTEGER :: i, j
+  SUBROUTINE build_system(LHS, RHS)
+    REAL, INTENT(INOUT) :: LHS(:,:), RHS(:)
+    INTEGER :: i, g, h
     
-    DO i=1, SIZE(Matrix,1)
-      DO j=1, SIZE(Matrix,2)
-        IF(i .LE. i_a*(j_b+1) .AND. j .LE. i_a*(j_b+1)) THEN
-          Matrix(i,j) = eps(j-1)*api2*(i**2 + (j-1)**2/xi2)*xi
-        ELSE IF(i .LE. i_a*(j_b+1)) THEN
+    LHS = 0.
+    RHS = 0.
 
-        ELSE IF(j .LE. i_a*(j_b+1) THEN
+    DO i=1, SIZE(LHS,1)
+      !Entries associated with A(g,h)
+      IF(i .LE. i_a*(j_b+1)) THEN
+        CALL AgANDh(i,g,h)
+        LHS(i,i) = eps(h)*api2*(g**2 + h**2/xi2)*xi
 
-        ELSE
+        LHS(i,i_a*(j_a+1)+1::j_b+1) = -Br(g,h)
+      !Entries associated with B(g,h)
+      ELSE
+        CALL BgANDh(i,g,h)
+        LHS(i,i) = eps(g)*bpi2*(g**2 + h**2/xi2)*xi
 
-        END IF
-      END DO
+        LHS(i,g*(j_a+1):g*(j_a+1)+j_a) = -An(g,h)
+        LHS(i,i_a*(j_a+1)+g*j_b+1:i_a*(j_a+1)+(g+1)*j_b) = LHS(i,i_a*(j_a+1)+g*j_b+1:i_a*(j_a+1)+(g+1)*j_b) - eps(g)*Bs(h)
+        RHS(i) = pid4*QuadVal(g,h) 
+      END IF
+      RHS(i) = RHS(i) + fourdpi*W_FUNC(g,h)
     END DO
-
   END SUBROUTINE
 
-  SUBROUTINE WRITETOFILE(Psi, C, x, y, i_y, j_x)
+  SUBROUTINE AgANDh(i, g, h) !Determines g and h given i inside A section of matrix or vector
+    INTEGER*4, INTENT(IN) :: i
+    INTEGER*4, INTENT(OUT) :: g, h
+    INTEGER*4 :: q
 
-    INTEGER, INTENT(IN) :: i_y, j_x
-    REAL, DIMENSION(0:i_y, 0:j_x), INTENT(IN) :: Psi, C
-    REAL, DIMENSION(0:j_x), INTENT(IN) :: x
-    REAL, DIMENSION(0:i_y), INTENT(IN) :: y
+    g = MOD(i,j_a+1)
+
+    DO q = 1, i_a !Determine g and h
+      IF (i >= (q - 1)*j_a + q .AND. i <= q*j_a + q) THEN
+        g = q
+      END IF
+    END DO
+    h = MOD(i, j_a + 1) - 1
+    IF (h < 0) THEN
+      h = j_a
+    END IF
+  END SUBROUTINE AgANDh
+
+  SUBROUTINE BgANDh(i, g, h) !Determines g and h given i inside B section of matrix or vector
+    INTEGER*4, INTENT(IN) :: i
+    INTEGER*4, INTENT(OUT) :: g, h
+    INTEGER*4 :: q, r
+
+    r = i - i_a*(j_a + 1)
+    DO q = 0, i_b
+      IF (r >= q*j_b + 1 .AND. r <= (q + 1)*j_b) THEN
+        g = q
+      END IF
+    END DO
+    h = MOD(r, j_b)
+    IF (h == 0) THEN
+      h = j_b
+    END IF
+  END SUBROUTINE BgANDh
+
+  FUNCTION QuadVal(g,h)
+    INTEGER, INTENT(IN) :: g, h
+    INTEGER :: m, n, r, s
+    REAL :: QuadVal
+
+    QuadVal = 0.
+    DO m=1,i_a
+      DO n=0,j_a
+        DO r=0,i_b
+          DO s=1,j_b
+            QuadVal = QuadVal + A_Matrix(m,n)*B_Matrix(n,s) &
+              *(m*s*L_FUNC(m,r,g)*R_FUNC(h,n,s) &
+              - n*r*F_FUNC(m,r,g)*G_FUNC(h,n,s)) 
+          END DO
+        END DO
+      END DO
+    END DO
+  END FUNCTION QuadVal
+
+  FUNCTION Br(g,h)
+    REAL :: Br(0:i_b)
+    INTEGER, INTENT(IN) :: g, h
+    INTEGER :: r
+
+    DO r=0,i_b
+      Br(r) = h*N_FUNC(g,r)
+    END DO
+  END FUNCTION
+
+  FUNCTION An(g,h)
+    REAL :: An(0:j_a)
+    INTEGER, INTENT(IN) :: g, h
+    INTEGER :: n
+
+    DO n=0,j_b
+      An(n) = g*N_FUNC(h,n)
+    END DO
+  END FUNCTION
+
+  FUNCTION Bs(h)
+    REAL :: Bs(j_b)
+    INTEGER, INTENT(IN) :: h
+    INTEGER :: s
+
+    DO s=1,j_b
+      Bs(s) = s*N_FUNC(h,s)
+    END DO
+  END FUNCTION
+
+  SUBROUTINE AssignAandB(Sol)
+    REAL, DIMENSION(linearsize), INTENT(IN) :: Sol
+    INTEGER*4 :: g, h, i
+
+    DO i = 1, linearsize
+      IF (i <= i_a*(j_a + 1)) THEN !A portion of Sol
+        CALL AGANDH(i, g, h) !Finds g and h corresponding to counter i
+        A_Matrix(g, h) = Sol(i)
+      ELSE !B portion of Sol
+        CALL BGANDH(i, g, h) !Finds g and h corresponding to counter i
+        B_Matrix(g, h) = Sol(i)
+      END IF
+    END DO
+  END SUBROUTINE AssignAandB
+
+  FUNCTION L2Norm(F)
+    REAL, INTENT(IN) :: F(:)
+    REAL :: L2Norm
+    INTEGER :: i,n
+
+    n = SIZE(F)
+    L2Norm = 0.
+
+    DO i = 1, n
+      L2Norm = L2Norm + (F(i))**2
+    END DO
+
+    L2Norm = L2Norm**0.5
+  END FUNCTION L2NORM
+
+  SUBROUTINE WriteToFile()
     INTEGER :: g, h
 
 101     FORMAT(1x, 3(F7.3,3x))
 
-!    WRITE (30,*) Psi
-!    WRITE (31,*) C
-!    WRITE (90,*) x
-!    WRITE (91,*) y
     DO h = 0, j_x !Write Psi and C out to file
       DO g = 0, i_y
         WRITE (30, 101) x(h), y(g), Psi(g, h)
@@ -156,7 +279,6 @@ PROGRAM Henrys_Problem
       WRITE (30,*)
       WRITE (31,*)
     END DO
-
   END SUBROUTINE
 
 END PROGRAM Henrys_Problem
