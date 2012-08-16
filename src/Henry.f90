@@ -55,8 +55,8 @@ PROGRAM Henrys_Problem
   
   REAL :: error
 
-  INTEGER :: h_a(2), h_b(0:1) !Size of h depends on both i and which coefficient A or B
-  INTEGER :: i_a, i_b, j_a, j_b, i_y, j_x, linearsize, i, j 
+  INTEGER :: h_a(3), h_b(0:2) !Size of h depends on both i and which coefficient A or B
+  INTEGER :: i_a, i_b, j_a, j_b, i_y, j_x, linearsize, i, j, n 
   
   INTEGER :: AllocateStatus !Status variable for ALLOCATE
   INTEGER :: g,h
@@ -65,8 +65,8 @@ PROGRAM Henrys_Problem
   OPEN(30, FILE='Psi0_1.txt')
   OPEN(31,FILE='C0_1.txt')
 
-  h_a = 1!(/ 15, 10, 5, 3, 2 /)
-  h_b = 2!(/ 20, 10, 5, 3, 2 /)
+  h_a = 2!(/ 15, 10, 5, 3, 2 /)
+  h_b = 3!(/ 20, 10, 5, 3, 2 /)
 
   i_a = SIZE(h_a,1)
   i_b = SIZE(h_b,1) - 1
@@ -100,14 +100,23 @@ PROGRAM Henrys_Problem
 
   DO WHILE(error > epsilon)
     CALL build_system(LHS,RHS) 
-    DO i=1,linearsize
-      IF(i .LE. i_a*(j_a+1)) THEN
-        CALL AgANDh(i,g,h)
-      ELSE
-        CALL BgANDh(i,g,h)
-      END IF
-      WRITE(*,*) g,h,(LHS(i,j), j=1,linearsize), "|", pid4*RHS(i)
-    END DO
+!    DO i=1,linearsize
+!      IF(i .LE. i_a*(j_a+1)) THEN
+!        CALL AgANDh(i,g,h)
+!      ELSE
+!        CALL BgANDh(i,g,h)
+!      END IF
+!      WRITE(*,*) g,h,(LHS(i,j), j=1,linearsize), "|", pid4*RHS(i)
+!    END DO
+!    STOP
+ 
+    !A(0,h) is an independent system
+    CALL ludcmp(LHS(:j_a+1,:j_a+1),j_a+1,j_a+1,indx(:j_a+1),d0)
+    CALL lubksb(LHS(:j_a+1,:j_a+1),j_a+1,j_a+1,indx(:j_a+1),RHS(:j_a+1))
+
+    !B(g,0) is an independent system
+    CALL ludcmp(LHS(i_a*(j_a+1)+1::j_b,i_a*(j_a+1)+1::j_b),j_b,j_b,indx(i_a*(j_a+1)+1::j_b),d0)
+    CALL lubksb(LHS(i_a*(j_a+1)+1::j_b,i_a*(j_a+1)+1::j_b),j_b,j_b,indx(i_a*(j_a+1)+1::j_b),RHS(i_a*(j_a+1)+1::j_b))
     STOP
 
     !Replaces LHS with its LU decomposition
@@ -173,6 +182,7 @@ PROGRAM Henrys_Problem
 !        WRITE(*,*) eps(g)*Bs(h)
         start = i_a*(j_a+1) + g*j_b+1
         finish = i_a*(j_a+1) + (g+1)*j_b
+!        WRITE(*,*) g, h, eps(g), Bs(h)
         LHS(i,start:finish) = LHS(i,start:finish) - eps(g)*Bs(h)
 
         !Nonlinear and linear terms which are considered constants and so are on the RHS
