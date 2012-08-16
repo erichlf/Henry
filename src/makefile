@@ -3,7 +3,7 @@
 # Start of the makefile
 FC = gfortran
 PROGRAM = Henry 
-#PROGRAM = Hnew
+PROGRAM = Hnew
 
 #ifeq ($(PROGRAM), Hnew)
 #  SRCS = Henry_funcs.f90 Henry_sums.f90 linpacks.f90 

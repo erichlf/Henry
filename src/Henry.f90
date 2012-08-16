@@ -111,13 +111,13 @@ PROGRAM Henrys_Problem
 !    STOP
  
     !A(0,h) is an independent system
-    CALL ludcmp(LHS(:j_a+1,:j_a+1),j_a+1,j_a+1,indx(:j_a+1),d0)
-    CALL lubksb(LHS(:j_a+1,:j_a+1),j_a+1,j_a+1,indx(:j_a+1),RHS(:j_a+1))
+!    CALL ludcmp(LHS(:j_a+1,:j_a+1),j_a+1,j_a+1,indx(:j_a+1),d0)
+!    CALL lubksb(LHS(:j_a+1,:j_a+1),j_a+1,j_a+1,indx(:j_a+1),RHS(:j_a+1))
 
     !B(g,0) is an independent system
-    CALL ludcmp(LHS(i_a*(j_a+1)+1::j_b,i_a*(j_a+1)+1::j_b),j_b,j_b,indx(i_a*(j_a+1)+1::j_b),d0)
-    CALL lubksb(LHS(i_a*(j_a+1)+1::j_b,i_a*(j_a+1)+1::j_b),j_b,j_b,indx(i_a*(j_a+1)+1::j_b),RHS(i_a*(j_a+1)+1::j_b))
-    STOP
+!    CALL ludcmp(LHS(i_a*(j_a+1)+1::j_b,i_a*(j_a+1)+1::j_b),j_b,j_b,indx(i_a*(j_a+1)+1::j_b),d0)
+!    CALL lubksb(LHS(i_a*(j_a+1)+1::j_b,i_a*(j_a+1)+1::j_b),j_b,j_b,indx(i_a*(j_a+1)+1::j_b),RHS(i_a*(j_a+1)+1::j_b))
+!    STOP
 
     !Replaces LHS with its LU decomposition
     CALL ludcmp(LHS, linearsize, linearsize, indx, d0) 
