@@ -122,7 +122,7 @@ PROGRAM Henrys_Problem
       CALL build_B0_W()
       CALL lubksb(B0,j_b,j_b,indx0,B0_W)
       error_B0 = L2Norm(B_Matrix(0,:) - B0_W)/L2Norm(B_Matrix(0,:))
-      WRITE(*,101) error_B0
+!      WRITE(*,101) error_B0
       B_Matrix(0,:) = B0_W
     END DO
     !STOP
@@ -230,9 +230,9 @@ PROGRAM Henrys_Problem
   END SUBROUTINE build_RHS
 
   SUBROUTINE AgANDh(i, g, h) !Determines g and h given i inside the A section of LHS or RHS
-    INTEGER*4, INTENT(IN) :: i
-    INTEGER*4, INTENT(OUT) :: g, h
-    INTEGER*4 :: q
+    INTEGER, INTENT(IN) :: i
+    INTEGER, INTENT(OUT) :: g, h
+    INTEGER :: q
 
     h = MOD(i, j_a + 1)
     g = (i - h)/(j_a+1) + 1
@@ -246,9 +246,9 @@ PROGRAM Henrys_Problem
   END SUBROUTINE AgANDh
 
   SUBROUTINE BgANDh(i, g, h) !Determines g and h given i inside the B section of LHS or RHS
-    INTEGER*4, INTENT(IN) :: i
-    INTEGER*4, INTENT(OUT) :: g, h
-    INTEGER*4 :: q, r
+    INTEGER, INTENT(IN) :: i
+    INTEGER, INTENT(OUT) :: g, h
+    INTEGER :: q, r
 
     r = i - i_a*(j_a + 1)
     h = MOD(r, j_b)
@@ -314,7 +314,7 @@ PROGRAM Henrys_Problem
 
   SUBROUTINE AssignAandB(Sol)
     REAL, DIMENSION(linearsize), INTENT(IN) :: Sol
-    INTEGER*4 :: g, h, i
+    INTEGER :: g, h, i
 
     DO i = 1, linearsize
       IF (i <= i_a*(j_a + 1)) THEN !A portion of Sol
