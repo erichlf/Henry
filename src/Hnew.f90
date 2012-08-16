@@ -42,8 +42,8 @@ PROGRAM Henrys_Problem !Use Newtown-Raphson to solve Henry's problem.
 
   REAL, DIMENSION(:, :), ALLOCATABLE :: MATRIX_A, MATRIX_B !Matrices of Fourier Coefficients
   REAL, DIMENSION(:, :), ALLOCATABLE :: Psi, C !Stramlines and Isochlors
-  REAL :: a = 0.263, b = 0.04, xi, d = 1.0, l = 2.0, dx = 0.05, dy= 0.05 !Problem parameters
-  REAL :: pid4, fourdpi, xi2, api2, bpi2 !Constants
+  REAL :: a = 0.263, b = 0.1, xi, d = 1.0, l = 2.0, dx = 0.05, dy= 0.05 !Problem parameters
+  REAL :: xi2, api2, bpi2 !Constants
   INTEGER*4 :: h_a(5), h_b(0:4) !Size of h depends on both i and which coefficient A or B
   INTEGER*4 :: i_a, i_b, j_a, j_b, i_y, j_x, i !Size of the Matrices
   INTEGER*4 :: g, h, m, n, o, p, q, r, s !Loop counters
@@ -78,10 +78,9 @@ PROGRAM Henrys_Problem !Use Newtown-Raphson to solve Henry's problem.
   j_x = NINT(l/dx) !Number of partitions in x for grid
   xi = l/d
 
-  pid4 = pi/4.
-  fourdpi = 4./pi
   xi2 = xi**2
   api2 = a*pi**2
+  bpi2 = b*pi**2
 
   linearsize = i_a*(j_a + 1) + (i_b + 1)*j_b
 
@@ -236,38 +235,35 @@ PROGRAM Henrys_Problem !Use Newtown-Raphson to solve Henry's problem.
     END DO
   END FUNCTION DF
 
-  SUBROUTINE AGANDH(o, g, h) !Determines g and h given o inside A section of matrix or vector
-    INTEGER*4, INTENT(IN) :: o
+  SUBROUTINE AgANDh(i, g, h) !Determines g and h given i inside the A section of LHS or RHS
+    INTEGER*4, INTENT(IN) :: i
     INTEGER*4, INTENT(OUT) :: g, h
     INTEGER*4 :: q
 
-    DO q = 1, i_a !Determine g and h
-      IF (o >= (q - 1)*j_a + q .AND. o <= q*j_a + q) THEN
-        g = q
-      END IF
-    END DO
-    h = MOD(o, j_a + 1) - 1
+    h = MOD(i, j_a + 1)
+    g = (i - h)/(j_a+1) + 1
+    h = h - 1
+
     IF (h < 0) THEN
       h = j_a
+      g = g - 1
     END IF
-  END SUBROUTINE AGANDH
 
-  SUBROUTINE BGANDH(o, g, h) !Determines g and h given o inside B section of matrix or vector
-    INTEGER*4, INTENT(IN) :: o
+  END SUBROUTINE AgANDh
+
+  SUBROUTINE BgANDh(i, g, h) !Determines g and h given i inside the B section of LHS or RHS
+    INTEGER*4, INTENT(IN) :: i
     INTEGER*4, INTENT(OUT) :: g, h
     INTEGER*4 :: q, r
 
-    r = o - i_a*(j_a + 1)
-    DO q = 0, i_b
-      IF (r >= q*j_b + 1 .AND. r <= (q + 1)*j_b) THEN
-        g = q
-      END IF
-    END DO
+    r = i - i_a*(j_a + 1)
     h = MOD(r, j_b)
+
     IF (h == 0) THEN
       h = j_b
     END IF
-  END SUBROUTINE BGANDH
+    g = (r - h)/j_b 
+  END SUBROUTINE BgANDh
 
   SUBROUTINE NEWTON()
     REAL, DIMENSION (linearsize) :: F_VECTOR, Solution_new, Solution_old
