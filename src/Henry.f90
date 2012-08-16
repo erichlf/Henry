@@ -56,7 +56,7 @@ PROGRAM Henrys_Problem
   REAL :: error
 
   INTEGER :: h_a(2), h_b(0:1) !Size of h depends on both i and which coefficient A or B
-  INTEGER :: i_a, i_b, j_a, j_b, i_y, j_x, linearsize,i 
+  INTEGER :: i_a, i_b, j_a, j_b, i_y, j_x, linearsize, i, j 
   
   INTEGER :: AllocateStatus !Status variable for ALLOCATE
   INTEGER :: g,h
@@ -97,6 +97,7 @@ PROGRAM Henrys_Problem
   error = 1.
   WRITE (*,*) 'b=', b
 
+
   DO WHILE(error > epsilon)
     CALL build_system(LHS,RHS) 
     DO i=1,linearsize
@@ -105,7 +106,7 @@ PROGRAM Henrys_Problem
       ELSE
         CALL BgANDh(i,g,h)
       END IF
-      WRITE(*,*) g,h,LHS(i,:), "|", pid4*RHS(i)
+      WRITE(*,*) g,h,(LHS(i,j), j=1,linearsize), "|", pid4*RHS(i)
     END DO
     STOP
 
@@ -150,7 +151,7 @@ PROGRAM Henrys_Problem
 
         !This part is for the sum of B(r,h) terms
         IF(h/=0) THEN
-          start = i_a*(j_b+1)+1
+          start = i_a*(j_a+1)+1
           stride = j_b
           LHS(i,start::stride) = -Br(g,h)
         END IF
