@@ -59,6 +59,7 @@ PROGRAM Henrys_Problem
   INTEGER :: i_a, i_b, j_a, j_b, i_y, j_x, linearsize,i 
   
   INTEGER :: AllocateStatus !Status variable for ALLOCATE
+  INTEGER :: g,h
 
 100     FORMAT("error=",ES8.2)
   OPEN(30, FILE='Psi0_1.txt')
@@ -99,7 +100,12 @@ PROGRAM Henrys_Problem
   DO WHILE(error > epsilon)
     CALL build_system(LHS,RHS) 
     DO i=1,linearsize
-      WRITE(*,*) LHS(i,:), "|", pid4*RHS(i)
+      IF(i .LE. i_a*(j_a+1)) THEN
+        CALL AgANDh(i,g,h)
+      ELSE
+        CALL BgANDh(i,g,h)
+      END IF
+      WRITE(*,*) g,h,LHS(i,:), "|", pid4*RHS(i)
     END DO
     STOP
 
@@ -149,7 +155,7 @@ PROGRAM Henrys_Problem
           LHS(i,start::stride) = -Br(g,h)
         END IF
         !Nonlinear and linear terms which are considered constants and so are on the RHS
-        RHS(i) = RHS(i) + fourdpi*W_FUNC(g,h)
+        RHS(i) = fourdpi*W_FUNC(g,h)
       !Entries associated with B(g,h)
       ELSE
         CALL BgANDh(i,g,h)
