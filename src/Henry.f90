@@ -44,24 +44,25 @@ PROGRAM Henrys_Problem
   REAL, PARAMETER :: d = 1.0, l = 2.0, dx = 0.05, dy= 0.05 
   REAL :: xi, xi2, api2, bpi2
 
-  REAL, DIMENSION(:, :), ALLOCATABLE :: A_Matrix, B_Matrix, LHS 
-  REAL, DIMENSION(:), ALLOCATABLE :: RHS, RHS_old 
+  REAL, DIMENSION(:, :), ALLOCATABLE :: A_Matrix, B_Matrix, LHS, B0 
+  REAL, DIMENSION(:), ALLOCATABLE :: RHS, RHS_old, B0_W 
   REAL, DIMENSION(:, :), ALLOCATABLE :: Psi, C 
   REAL, DIMENSION(:), ALLOCATABLE :: x, y 
 
   !LU decomp stuff
-  INTEGER, DIMENSION(:), ALLOCATABLE :: indx
+  INTEGER, DIMENSION(:), ALLOCATABLE :: indx, indx0
   REAL :: d0
   
-  REAL :: error
+  REAL :: error, error_B0
 
   INTEGER :: h_a(3), h_b(0:2) !Size of h depends on both i and which coefficient A or B
   INTEGER :: i_a, i_b, j_a, j_b, i_y, j_x, linearsize, i, j, n 
   
   INTEGER :: AllocateStatus !Status variable for ALLOCATE
-  INTEGER :: g,h
+  INTEGER :: g,h, start, finish, stride
 
 100     FORMAT("error=",ES8.2)
+101     FORMAT("    error_B0=",ES8.2)
   OPEN(30, FILE='Psi0_1.txt')
   OPEN(31,FILE='C0_1.txt')
 
@@ -84,8 +85,8 @@ PROGRAM Henrys_Problem
 
   ALLOCATE(A_Matrix(i_a, 0:j_a), B_Matrix(0:i_b, j_b), Psi(0:i_y, 0:j_x), &
     C(0:i_y, 0:j_x), x(0:j_x), y(0:i_y), LHS(linearsize, linearsize), &
-    RHS(linearsize), RHS_old(linearsize), indx(linearsize), &
-    STAT = AllocateStatus) 
+    RHS(linearsize), RHS_old(linearsize), indx(linearsize), indx0(j_b), &
+    B0(j_b, j_b), B0_W(j_b), STAT = AllocateStatus) 
   IF(AllocateStatus /= 0) STOP "*** NOT ENOUGH MEMORY ***"
 
   A_Matrix = 0. 
@@ -96,32 +97,44 @@ PROGRAM Henrys_Problem
   
   error = 1.
   WRITE (*,*) 'b=', b
-
-
-  DO WHILE(error > epsilon)
-    CALL build_system(LHS,RHS) 
-!    DO i=1,linearsize
-!      IF(i .LE. i_a*(j_a+1)) THEN
-!        CALL AgANDh(i,g,h)
-!      ELSE
-!        CALL BgANDh(i,g,h)
-!      END IF
-!      WRITE(*,*) g,h,(LHS(i,j), j=1,linearsize), "|", pid4*RHS(i)
-!    END DO
-!    STOP
  
-    !A(0,h) is an independent system
-    CALL ludcmp(LHS(:j_a+1,:j_a+1),j_a+1,j_a+1,indx(:j_a+1),d0)
-    CALL lubksb(LHS(:j_a+1,:j_a+1),j_a+1,j_a+1,indx(:j_a+1),RHS(:j_a+1))
+  !A(g,0) is an independent system
+  h = 0
+  DO g =1,i_a
+    A_Matrix(g,h) = 1/(2*api2*g**2*xi)*fourdpi*W_Func(g,h)
+  END DO
 
+  !B(0,h) is an independent system, but does need the updated QuadVal
+  !We will update B0_W inside the loop and then solve for B(0,h)
+  CALL build_B0()
+  CALL ludcmp(B0,j_b,j_b,indx0,d0)
+
+  !The Left Hand Side doesn't change so make it once and update RHS inside loop
+  CALL build_LHS() 
+  !Replaces LHS with its LU decomposition
+  CALL ludcmp(LHS, linearsize, linearsize, indx, d0) 
+
+<<<<<<< HEAD
     !B(g,0) is an independent system
         !B(g,0) is an independent system
     CALL ludcmp(LHS(i_a*(j_a+1)+1::j_b,i_a*(j_a+1)+1::j_b),j_b,j_b,indx(i_a*(j_a+1)+1::j_b),d0)
     CALL lubksb(LHS(i_a*(j_a+1)+1::j_b,i_a*(j_a+1)+1::j_b),j_b,j_b,indx(i_a*(j_a+1)+1::j_b),RHS(i_a*(j_a+1)+1::j_b))
+=======
+  DO WHILE(error > epsilon)
+    !B(0,h) is an independent system, but does need the updated QuadVal
+    !So run a loop on B0 until it converges
+    error_B0 = 1
+    DO WHILE(error_B0 > epsilon)
+      CALL build_B0_W()
+      CALL lubksb(B0,j_b,j_b,indx0,B0_W)
+      error_B0 = L2Norm(B_Matrix(0,:) - B0_W)/L2Norm(B_Matrix(0,:))
+!      WRITE(*,101) error_B0
+      B_Matrix(0,:) = B0_W
+    END DO
+>>>>>>> 320ab0781106239e60f519a8fc3c9d817bce96c5
     !STOP
 
-    !Replaces LHS with its LU decomposition
-    CALL ludcmp(LHS, linearsize, linearsize, indx, d0) 
+    CALL build_RHS()
     !Solves A*x=B using ludcmp
     CALL lubksb(LHS, linearsize, linearsize, indx, RHS) 
 
@@ -144,14 +157,30 @@ PROGRAM Henrys_Problem
 
   CONTAINS
 
-  !This will create the Left Hand Side and Right Hand Side for the Henry Method
-  SUBROUTINE build_system(LHS, RHS)
-    REAL, INTENT(INOUT) :: LHS(:,:), RHS(:)
+  SUBROUTINE build_B0()
+    INTEGER :: h
+
+    B0 = 0.
+
+    DO h=1,j_b
+      B0(h,h) = 2*bpi2*h**2/xi
+      B0(h,:) = B0(h,:) - 2*Bs(h)
+    END DO
+  END SUBROUTINE build_B0
+
+  SUBROUTINE build_B0_W()
+    INTEGER :: h
+
+    B0_W = 0.
+    DO h=1,j_b
+      B0_W(h) = pid4*QuadVal(0,h) + fourdpi*W_FUNC(h,0) 
+    END DO
+  END SUBROUTINE build_B0_W
+
+  SUBROUTINE build_LHS()
     INTEGER :: i, g, h,start, finish, stride
     
     LHS = 0.
-    RHS = 0.
-
     DO i=1, linearsize
       !Entries associated with A(g,h)
       IF(i .LE. i_a*(j_a+1)) THEN
@@ -165,8 +194,6 @@ PROGRAM Henrys_Problem
           stride = j_b
           LHS(i,start::stride) = -Br(g,h)
         END IF
-        !Nonlinear and linear terms which are considered constants and so are on the RHS
-        RHS(i) = fourdpi*W_FUNC(g,h)
       !Entries associated with B(g,h)
       ELSE
         CALL BgANDh(i,g,h)
@@ -185,17 +212,34 @@ PROGRAM Henrys_Problem
         finish = i_a*(j_a+1) + (g+1)*j_b
 !        WRITE(*,*) g, h, eps(g), Bs(h)
         LHS(i,start:finish) = LHS(i,start:finish) - eps(g)*Bs(h)
+      END IF
+    END DO
+  END SUBROUTINE build_LHS
 
+  SUBROUTINE build_RHS()
+    INTEGER :: i, g, h,start, finish, stride
+    
+    RHS = 0.
+
+    DO i=1, linearsize
+      !Entries associated with A(g,h)
+      IF(i .LE. i_a*(j_a+1)) THEN
+        CALL AgANDh(i,g,h)
+        !Nonlinear and linear terms which are considered constants and so are on the RHS
+        RHS(i) = fourdpi*W_FUNC(g,h)
+      !Entries associated with B(g,h)
+      ELSE
+        CALL BgANDh(i,g,h)
         !Nonlinear and linear terms which are considered constants and so are on the RHS
         RHS(i) = pid4*QuadVal(g,h) + fourdpi*W_FUNC(h,g) 
       END IF
     END DO
-  END SUBROUTINE
+  END SUBROUTINE build_RHS
 
   SUBROUTINE AgANDh(i, g, h) !Determines g and h given i inside the A section of LHS or RHS
-    INTEGER*4, INTENT(IN) :: i
-    INTEGER*4, INTENT(OUT) :: g, h
-    INTEGER*4 :: q
+    INTEGER, INTENT(IN) :: i
+    INTEGER, INTENT(OUT) :: g, h
+    INTEGER :: q
 
     h = MOD(i, j_a + 1)
     g = (i - h)/(j_a+1) + 1
@@ -209,9 +253,9 @@ PROGRAM Henrys_Problem
   END SUBROUTINE AgANDh
 
   SUBROUTINE BgANDh(i, g, h) !Determines g and h given i inside the B section of LHS or RHS
-    INTEGER*4, INTENT(IN) :: i
-    INTEGER*4, INTENT(OUT) :: g, h
-    INTEGER*4 :: q, r
+    INTEGER, INTENT(IN) :: i
+    INTEGER, INTENT(OUT) :: g, h
+    INTEGER :: q, r
 
     r = i - i_a*(j_a + 1)
     h = MOD(r, j_b)
@@ -277,7 +321,7 @@ PROGRAM Henrys_Problem
 
   SUBROUTINE AssignAandB(Sol)
     REAL, DIMENSION(linearsize), INTENT(IN) :: Sol
-    INTEGER*4 :: g, h, i
+    INTEGER :: g, h, i
 
     DO i = 1, linearsize
       IF (i <= i_a*(j_a + 1)) THEN !A portion of Sol

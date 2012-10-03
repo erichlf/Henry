@@ -40,20 +40,19 @@ PROGRAM Henrys_Problem !Use Newtown-Raphson to solve Henry's problem.
   USE LU
   IMPLICIT NONE
 
-  REAL, DIMENSION(:, :), ALLOCATABLE :: MATRIX_A, MATRIX_B !Matrices of Fourier Coefficients
-  REAL, DIMENSION(:, :), ALLOCATABLE :: Psi, C !Stramlines and Isochlors
-  REAL :: a = 0.263, b = 0.04, xi, d = 1.0, l = 2.0, dx = 0.05, dy= 0.05 !Problem parameters
-  REAL :: pid4, fourdpi, xi2, api2, bpi2 !Constants
-  INTEGER*4 :: h_a(5), h_b(0:4) !Size of h depends on both i and which coefficient A or B
-  INTEGER*4 :: i_a, i_b, j_a, j_b, i_y, j_x, i !Size of the Matrices
-  INTEGER*4 :: g, h, m, n, o, p, q, r, s !Loop counters
-  INTEGER*4 :: AllocateStatus !Status variable for ALLOCATE
-  INTEGER*4 :: linearsize
-  REAL :: EPSILON = 5E-4
+  REAL :: epsilon = 5E-4
 
-!  COMMON :: a, b, xi, d, l, dx, dy, pid4, fourdpi, xi2, api2, bpi2
-!  COMMON :: i_a, i_b, j_a, j_b, i_y, j_x, linearsize
-!  COMMON :: EPSILON
+  REAL, PARAMETER :: a = 0.263, b = 0.1 
+  REAL, PARAMETER :: d = 1.0, l = 2.0, dx = 0.05, dy= 0.05 
+  REAL :: xi, xi2, api2, bpi2
+
+  REAL, DIMENSION(:, :), ALLOCATABLE :: A_Matrix, B_Matrix !Matrices of Fourier Coefficients
+  REAL, DIMENSION(:, :), ALLOCATABLE :: Psi, C !Stramlines and Isochlors
+  INTEGER :: h_a(5), h_b(0:4) !Size of h depends on both i and which coefficient A or B
+  INTEGER :: i_a, i_b, j_a, j_b, i_y, j_x, i !Size of the Matrices
+  INTEGER :: g, h, m, n, o, p, q, r, s !Loop counters
+  INTEGER :: AllocateStatus !Status variable for ALLOCATE
+  INTEGER :: linearsize
 
   OPEN (30, FILE="Psi0_05.txt")
   OPEN (31, FILE="C0_05.txt")
@@ -70,31 +69,27 @@ PROGRAM Henrys_Problem !Use Newtown-Raphson to solve Henry's problem.
   h_a = (/ 15, 10, 5, 3, 2 /)
   h_b = (/ 20, 10, 5, 3, 2 /)
 
-  i_a = 5
-  i_b = 4
+  i_a = SIZE(h_a,1)
+  i_b = SIZE(h_b,1) - 1
   j_a = MAXVAL(h_a) !Size of largest row in A
   j_b = MAXVAL(h_b) !Size of largest row in B
   i_y = NINT(d/dy) !Number of partitions in y for grid
   j_x = NINT(l/dx) !Number of partitions in x for grid
   xi = l/d
 
-  pid4 = pi/4.
-  fourdpi = 4./pi
   xi2 = xi**2
   api2 = a*pi**2
+  bpi2 = b*pi**2
 
   linearsize = i_a*(j_a + 1) + (i_b + 1)*j_b
 
-  ALLOCATE(MATRIX_A(i_a, 0:j_a), MATRIX_B(0:i_b, j_b), Psi(0:i_y, 0:j_x), C(0:i_y, 0:j_x), STAT = AllocateStatus)
+  ALLOCATE(A_Matrix(i_a, 0:j_a), B_Matrix(0:i_b, j_b), Psi(0:i_y, 0:j_x), C(0:i_y, 0:j_x), STAT = AllocateStatus)
   IF(AllocateStatus /= 0) THEN
     STOP "*** NOT ENOUGH MEMORY ***"
   END IF
 
-  MATRIX_A = 0.
-  MATRIX_B = 0.
-!  READ (32, *) MATRIX_A !Reads in A and B from file for initial guess
-!  READ (33, *) MATRIX_B
-
+  A_Matrix = 0.
+  B_Matrix = 0.
 !	DO i = 0, 4
 !    IF (i /= 0) THEN
 !      b = b - 0.01
@@ -107,8 +102,8 @@ PROGRAM Henrys_Problem !Use Newtown-Raphson to solve Henry's problem.
   CALL PSIANDC(Psi, C) !Assigns Psi and C based on A and B
   CALL Dispersivity()
 
-  WRITE (34, *) MATRIX_A !Writes A and B to file
-  WRITE (35, *) MATRIX_B
+  WRITE (34, *) A_Matrix !Writes A and B to file
+  WRITE (35, *) B_Matrix
 
   CLOSE (30)
   CLOSE (31)
@@ -117,37 +112,37 @@ PROGRAM Henrys_Problem !Use Newtown-Raphson to solve Henry's problem.
   CLOSE (34)
   CLOSE (35)
 
-  DEALLOCATE(MATRIX_A, MATRIX_B, Psi, C)
+  DEALLOCATE(A_Matrix, B_Matrix, Psi, C)
 
 !**************************************** Begin supporting FUNCTIONS ************************
         
   CONTAINS
 
   FUNCTION dFdA(g, h, m, n) !A derivative of quadratic portion of F
-    INTEGER*4, INTENT(IN) :: g, h, m, n
-    INTEGER*4 :: r, s
+    INTEGER, INTENT(IN) :: g, h, m, n
+    INTEGER :: r, s
     REAL :: dFdA
 
     dFdA = 0. !Initialize derivative to 0
 
     DO r = 0, i_b
       DO s = 1, j_b
-        dFdA = dFdA + MATRIX_B(r,s)*(REAL(m*s*L_FUNC(m, r, g)*R_FUNC(h, n, s)) &
+        dFdA = dFdA + B_Matrix(r,s)*(REAL(m*s*L_FUNC(m, r, g)*R_FUNC(h, n, s)) &
           - REAL(n*r*F_FUNC(m, r, g)*G_FUNC(h, n, s)))
       END DO
     END DO
   END FUNCTION dFdA
 
   FUNCTION dFdB(g, h, r, s) !B derivative of quadratic portion of F
-    INTEGER*4, INTENT(IN) :: g, h, r, s
-    INTEGER*4 :: m, n
+    INTEGER, INTENT(IN) :: g, h, r, s
+    INTEGER :: m, n
     REAL :: dFdB
 
     dFdB = 0. !Initialize derivative to 0
 
     DO m = 1, i_a
       DO n = 0, j_a
-        dFdB = dFdB + MATRIX_A(m,n)*(REAL(m*s*L_FUNC(m, r, g)*R_FUNC(h, n, s)) &
+        dFdB = dFdB + A_Matrix(m,n)*(REAL(m*s*L_FUNC(m, r, g)*R_FUNC(h, n, s)) &
           - REAL(n*r*F_FUNC(m, r, g)*G_FUNC(h, n, s)))
       END DO
     END DO
@@ -155,7 +150,7 @@ PROGRAM Henrys_Problem !Use Newtown-Raphson to solve Henry's problem.
 
   FUNCTION F() RESULT(F_VECTOR)
     REAL, DIMENSION (:), ALLOCATABLE :: F_VECTOR
-    INTEGER*4 :: o, q
+    INTEGER :: o, q
 
     ALLOCATE(F_VECTOR(linearsize), STAT = AllocateStatus)
     IF(AllocateStatus /= 0) THEN
@@ -167,20 +162,20 @@ PROGRAM Henrys_Problem !Use Newtown-Raphson to solve Henry's problem.
     DO o = 1, linearsize !Place values in both F and DF
       IF (o <= i_a*(j_a + 1)) THEN !A portion of F and DF
         CALL AGANDH(o, g, h) !Determine what g and h are for this row
-        F_vector(o) = eps(h)*api2*MATRIX_A(g,h)*(g**2 + h**2/xi2)*xi &
-          - SUM_BN(MATRIX_B, i_b, j_b, g, h) - fourdpi*W_FUNC(g, h) !A portion of F
+        F_vector(o) = eps(h)*api2*A_Matrix(g,h)*(g**2 + h**2/xi2)*xi &
+          - SUM_BN(B_Matrix, i_b, j_b, g, h) - fourdpi*W_FUNC(g, h) !A portion of F
       ELSE !B portion of F and DF
         CALL BGANDH(o, g, h) !Determine what g and h are for this row
-        F_vector(o) = eps(g)*bpi2*MATRIX_B(g, h)*(g**2 + h**2/xi2)*xi &
-          - SUM_AN(MATRIX_A, i_a, j_a, g, h) - eps(g)*SUM_BsN(MATRIX_B, i_b, j_b, g, h) &
-          - pid4*SUM_AB(MATRIX_A, MATRIX_B, i_a, j_a, i_b, j_b, g, h) - fourdpi*W_FUNC(h, g) !B portion of F
+        F_vector(o) = eps(g)*bpi2*B_Matrix(g, h)*(g**2 + h**2/xi2)*xi &
+          - SUM_AN(A_Matrix, i_a, j_a, g, h) - eps(g)*SUM_BsN(B_Matrix, i_b, j_b, g, h) &
+          - pid4*SUM_AB(A_Matrix, B_Matrix, i_a, j_a, i_b, j_b, g, h) - fourdpi*W_FUNC(h, g) !B portion of F
       END IF
     END DO
   END FUNCTION F
 
   FUNCTION DF() RESULT(DF_MATRIX)
     REAL, DIMENSION (:, :), ALLOCATABLE :: DF_MATRIX
-    INTEGER*4 :: o, p, q, r, s
+    INTEGER :: o, p, q, r, s
 
     ALLOCATE(DF_MATRIX(linearsize,linearsize), STAT = AllocateStatus)
     IF(AllocateStatus /= 0) THEN
@@ -236,43 +231,40 @@ PROGRAM Henrys_Problem !Use Newtown-Raphson to solve Henry's problem.
     END DO
   END FUNCTION DF
 
-  SUBROUTINE AGANDH(o, g, h) !Determines g and h given o inside A section of matrix or vector
-    INTEGER*4, INTENT(IN) :: o
-    INTEGER*4, INTENT(OUT) :: g, h
-    INTEGER*4 :: q
+  SUBROUTINE AgANDh(i, g, h) !Determines g and h given i inside the A section of LHS or RHS
+    INTEGER, INTENT(IN) :: i
+    INTEGER, INTENT(OUT) :: g, h
+    INTEGER :: q
 
-    DO q = 1, i_a !Determine g and h
-      IF (o >= (q - 1)*j_a + q .AND. o <= q*j_a + q) THEN
-        g = q
-      END IF
-    END DO
-    h = MOD(o, j_a + 1) - 1
+    h = MOD(i, j_a + 1)
+    g = (i - h)/(j_a+1) + 1
+    h = h - 1
+
     IF (h < 0) THEN
       h = j_a
+      g = g - 1
     END IF
-  END SUBROUTINE AGANDH
 
-  SUBROUTINE BGANDH(o, g, h) !Determines g and h given o inside B section of matrix or vector
-    INTEGER*4, INTENT(IN) :: o
-    INTEGER*4, INTENT(OUT) :: g, h
-    INTEGER*4 :: q, r
+  END SUBROUTINE AgANDh
 
-    r = o - i_a*(j_a + 1)
-    DO q = 0, i_b
-      IF (r >= q*j_b + 1 .AND. r <= (q + 1)*j_b) THEN
-        g = q
-      END IF
-    END DO
+  SUBROUTINE BgANDh(i, g, h) !Determines g and h given i inside the B section of LHS or RHS
+    INTEGER, INTENT(IN) :: i
+    INTEGER, INTENT(OUT) :: g, h
+    INTEGER :: q, r
+
+    r = i - i_a*(j_a + 1)
     h = MOD(r, j_b)
+
     IF (h == 0) THEN
       h = j_b
     END IF
-  END SUBROUTINE BGANDH
+    g = (r - h)/j_b 
+  END SUBROUTINE BgANDh
 
   SUBROUTINE NEWTON()
     REAL, DIMENSION (linearsize) :: F_VECTOR, Solution_new, Solution_old
     REAL, DIMENSION (linearsize, linearsize) :: DF_MATRIX
-    INTEGER*4, DIMENSION(linearsize) :: indx
+    INTEGER, DIMENSION(linearsize) :: indx
     INTEGER :: info, job
     REAL :: d0, ERROR
 
@@ -308,9 +300,9 @@ PROGRAM Henrys_Problem !Use Newtown-Raphson to solve Henry's problem.
       F_VECTOR = F() !Reevaluates F since it was replaced by solution to DF*F=F
       
       WRITE (*, *) "error=", ERROR !Writes error to screen
-      IF (ERROR < EPSILON) THEN !Checks for convergence
+      IF (ERROR < epsilon) THEN !Checks for convergence
         !Check second Criterion
-        IF (L2NORM(F_vector,linearsize) < EPSILON*100) THEN
+        IF (L2NORM(F_vector,linearsize) < epsilon*100) THEN
           EXIT
         ELSE !States why it still has not converged
           WRITE (*,*) "Second Criterion not met L2NORM(F)=", L2NORM(F_VECTOR,linearsize)
@@ -320,10 +312,10 @@ PROGRAM Henrys_Problem !Use Newtown-Raphson to solve Henry's problem.
   END SUBROUTINE NEWTON
 
   FUNCTION L2NORM(F, n) RESULT(Norm)
-    INTEGER*4, INTENT(IN) :: n
+    INTEGER, INTENT(IN) :: n
     REAL, DIMENSION(n), INTENT(IN) :: F
     REAL :: Norm
-    INTEGER*4 :: i
+    INTEGER :: i
 
     Norm = 0.
 
@@ -336,30 +328,30 @@ PROGRAM Henrys_Problem !Use Newtown-Raphson to solve Henry's problem.
 
   SUBROUTINE ASSIGNAANDB(Solution_new)
     REAL, DIMENSION(linearsize), INTENT(IN) :: Solution_new
-    INTEGER*4 :: g, h, o, q
+    INTEGER :: g, h, o, q
 
     DO o = 1, linearsize
       IF (o <= i_a*(j_a + 1)) THEN !A portion of Solution_new
         CALL AGANDH(o, g, h) !Finds g and h corresponding to counter o
-        MATRIX_A(g, h) = Solution_new(o)
+        A_Matrix(g, h) = Solution_new(o)
       ELSE !B portion of Solution_new
         CALL BGANDH(o, g, h) !Finds g and h corresponding to counter o
-        MATRIX_B(g, h) = Solution_new(o)
+        B_Matrix(g, h) = Solution_new(o)
       END IF
     END DO
   END SUBROUTINE ASSIGNAANDB
 
   SUBROUTINE ASSIGNSOLOLD(Solution_old)
     REAL, DIMENSION(linearsize), INTENT(OUT) :: Solution_old
-    INTEGER*4 :: g, h, o, q
+    INTEGER :: g, h, o, q
 
     DO o = 1, linearsize
       IF (o <= i_a*(j_a + 1)) THEN !A portion of Solution_new
         CALL AGANDH(o, g, h) !Finds g and h corresponding to counter o
-        Solution_old(o) = MATRIX_A(g, h)
+        Solution_old(o) = A_Matrix(g, h)
       ELSE !B portion of Solution_new
         CALL BGANDH(o, g, h) !Finds g and h corresponding to counter o
-        Solution_old(o) = MATRIX_B(g, h)
+        Solution_old(o) = B_Matrix(g, h)
       END IF
     END DO
   END SUBROUTINE ASSIGNSOLOLD
@@ -368,7 +360,7 @@ PROGRAM Henrys_Problem !Use Newtown-Raphson to solve Henry's problem.
     REAL, DIMENSION(0:i_y, 0:j_x) :: Psi, C
     REAL, DIMENSION(0:j_x) :: x
     REAL, DIMENSION(0:i_y) :: y
-    INTEGER*4 :: g, h
+    INTEGER :: g, h
 
     DO h = 0, j_x     !Initializing the values for x
       x(h) = dx*h
@@ -384,8 +376,8 @@ PROGRAM Henrys_Problem !Use Newtown-Raphson to solve Henry's problem.
           Psi(g, h) = 0.
           C(g, h) = 0.
         ELSE
-          Psi(g, h) = SUM_A(MATRIX_A, x, y, xi, g, h, i_a, j_a, i_y, j_x) + y(g)/d
-          C(g, h) = SUM_B(MATRIX_B, x, y, xi, g, h, i_b, j_b, i_y, j_x) + x(h)/(d*xi)
+          Psi(g, h) = SUM_A(A_Matrix, x, y, xi, g, h, i_a, j_a, i_y, j_x) + y(g)/d
+          C(g, h) = SUM_B(B_Matrix, x, y, xi, g, h, i_b, j_b, i_y, j_x) + x(h)/(d*xi)
         END IF
       END DO
     END DO
@@ -396,7 +388,7 @@ PROGRAM Henrys_Problem !Use Newtown-Raphson to solve Henry's problem.
   SUBROUTINE WRITETOFILE(x, y)
     REAL, DIMENSION(0:j_x), INTENT(IN) :: x
     REAL, DIMENSION(0:i_y), INTENT(IN) :: y
-    INTEGER*4 :: g, h
+    INTEGER :: g, h
       
     WRITE(30,*) "#  X  Y  Z"
     WRITE(31,*) "#  X  Y  Z"
@@ -423,9 +415,9 @@ PROGRAM Henrys_Problem !Use Newtown-Raphson to solve Henry's problem.
   SUBROUTINE REGULARIZATION(DF_MATRIX, F_VECTOR) 
     REAL, DIMENSION (linearsize) :: F_VECTOR
     REAL, DIMENSION (linearsize, linearsize) :: DF_MATRIX, DF_T, D, alphaI
-    INTEGER*4, DIMENSION(linearsize) :: indx
+    INTEGER, DIMENSION(linearsize) :: indx
     REAL :: d0, alpha = 0.
-    INTEGER*4 :: i
+    INTEGER :: i
 
     DO i = 1, linearsize !Creates the diagonal matrix of DF and takes the square root then inverts it and creates alpha*I
       D(i,i) = (DF_MATRIX(i,i))**(-0.5)
@@ -452,7 +444,7 @@ PROGRAM Henrys_Problem !Use Newtown-Raphson to solve Henry's problem.
   SUBROUTINE Dispersivity()
     REAL :: Q = 10., depth=50., D
     REAL, DIMENSION(0:i_y, 1:j_x) :: alpha, dPsi, v
-    INTEGER*4 :: i, j
+    INTEGER :: i, j
     REAL, DIMENSION(1:j_x) :: x
     REAL, DIMENSION(0:i_y) :: y
 
@@ -475,7 +467,7 @@ PROGRAM Henrys_Problem !Use Newtown-Raphson to solve Henry's problem.
       END DO
     END DO
 
-    101     FORMAT(1x, 3(F7.3,3x))
+101     FORMAT(1x, 3(F7.3,3x))
 
   END SUBROUTINE
 
